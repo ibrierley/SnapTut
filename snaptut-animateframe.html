@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>
+<article>
+  <h1 class="heading">Translating a group</h1>
+  <div class="intro">Lets group some elements and translate them in one go</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+
+var myFrames = [{
+			animation: { transform: 'r360,150,150' }, dur: 1000 },
+	{	 	animation: { transform: 't100,-100s2,3' }, dur: 1000 },
+	{		animation: { transform: 't100,100' }, dur: 1000 },
+	{               animation: { transform: 's0,1' }, dur: 1000 },
+	{               animation: { transform: 's1,0' }, dur: 1000 },
+	{               animation: { transform: 's1,1' }, dur: 1000 }];
+
+var rectAnim = [{
+		 	animation: { fill: 'green', transform: 'r1180,150,150' }, dur: 1500 },
+		{ 	 animation: { fill: 'silver', transform: 'r360,150,150' }, dur: 1500 }];
+
+var circleAnim = [{	animation: { transform: 's0,1' }, dur: 1500 },
+		{	animation: { transform: 's1,1' }, dur: 1500 }];
+
+function nextFrame ( el, frameArray,  whichFrame ) {
+	if( whichFrame >= frameArray.length ) { return }
+	el.animate( frameArray[ whichFrame ].animation, frameArray[ whichFrame ].dur, nextFrame.bind( null, el, frameArray, whichFrame + 1 ) );
+
+}
+
+var r = s.rect(100,100,100,100,20,20).attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'red' });
+var c = s.circle(50,50,50).attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'blue' });
+
+var g = s.group(r,c);
+
+//g.animate({ transform: 'r360,150,150' }, 1000, mina.bounce );
+nextFrame( g, myFrames, 0 );
+nextFrame( r, rectAnim, 0 );
+nextFrame( c, circleAnim, 0 );
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

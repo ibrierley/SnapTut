@@ -1,0 +1,90 @@
+h1, h3 {	text-align:center }
+li { 	font-size: 1.2em;
+	line-height: 1.3em;
+}
+
+#navigation {
+	 float: left;
+#  margin-top: -0.2em;
+width: 600px;
+  border-right:10px;
+  background: #cccccc;
+  border: 6px solid #eeeeee;
+  border-radius: 5px;
+#  background-image:  -moz-linear-gradient(top, #CC661A 0%, #CC661A 100%);
+#  background-image:  -webkit-gradient(linear, left top, left bottom, color-stop(0%,#CC661A), color-stop(100%,#CC661A));
+#  background-image:  -webkit-linear-gradient(top, #CC661A 0%,#CC661A 100%);
+#  background-image:  -o-linear-gradient(top, #CC661A 0%,#CC661A 100%);
+#  background-image:  -ms-linear-gradient(top, #CC661A 0%,#CC661A 100%);
+#  background-image:  linear-gradient(top, #CC661A 0%,#CC661A 100%);
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-right: 1em;
+}
+
+.codediv {
+#	font-family: 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	padding: 2px 3px;
+#  	background-color: rgb(200,200,200);
+#	display: inline;
+}
+
+.codestuff, .demoout {
+	outline: none;
+    background-color: #F9F9F9;
+    border: 1px dashed #2F6FAB;
+    color: black;
+    line-height: 1.1em;
+    padding: 1em;
+	width: 70%;
+	margin-left: 10%;
+}
+
+.intro {
+	color: black;
+	padding: 1em;
+	width: 80%;
+	margin-left: 12%;
+}
+
+.run {
+	color: black;
+	width: 80px;
+	right: 0px;
+}
+
+.outxxx {
+        color: black;
+        width: 70%;
+        margin-left: 10%;
+	border: 1px dashed #2F6FAB;
+}
+
+#svgout {
+	color: black;
+        width: 70%;
+        margin-left: 12%;
+        border: 1px dashed #2F6FAB;
+
+}
+
+#htmlraw {
+	color: black;
+        width: 70%;
+        margin-left: 12%;
+        border: 1px dashed #2F6FAB;
+
+}
+
+code .keyword              { font-weight: bold }
+code .string, code .regexp { color: green }
+code .class, code .special { color: blue }
+code .number               { color: pink }
+code .comment              { color: grey }
+code { outline: none }
+
+.bordered {
+	border: 4px;
+	rotateZ: 20deg;
+}

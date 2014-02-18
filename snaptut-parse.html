@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Parse SVG Fragment</h1>
+  <div class="intro">Lets get some SVG markup loaded as a Fragment, and do something with it.<br/>
+		Note, it gets loaded into Snap as a fragment.</div>
+  <pre class="codestuff"><code contenteditable="true">
+<xmp>
+var s = Snap("#svgout"); 
+var myFrag = Snap.parse('<defs> \
+    <path id="MyPath" \
+          d="M 100 200 \
+             C 200 100 300   0 400 100 \
+             C 500 200 600 300 700 200 \
+             C 800 100 900 100 900 100" /> \
+  </defs> \
+ <text font-family="Verdana" font-size="42.5"> \
+  <textPath id="myTextPath" xlink:href="#MyPath"> \
+      Some text can go in here  \
+    </textPath> \
+ </text>\
+');
+
+s.append( myFrag );
+var tp = s.select("#myTextPath");
+tp.animate({ 'startOffset': 2000 }, 5000 );
+
+
+</xmp>
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

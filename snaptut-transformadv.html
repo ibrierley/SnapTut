@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>
+<article>
+  <h1 class="heading">Snap transforms</h1>
+  <div class="intro">Time to get used to transforms...transforms are combined and affect a 'matrix. If you look at the markup at the bottom when run, you will see some transform 'matrix'. These are the combined transforms in one lump.</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+
+var c = s.circle( 200,200,10 );
+var r = s.rect(200,100,100,100,20,20).attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'red', 'opacity': 0.3 });
+
+var g = s.group(c,r);
+g.transform( "t100,100r45" );
+
+rclone = r.clone();
+rclone2 = r.clone();
+rclone3 = r.clone();
+rclone4 = r.clone();
+rclone5 = r.clone();
+
+//t=relative transform, T=absolute transform, s=relative scale, S=absolute Scale
+//r=relative rotate, R=relative rotate
+//relative means it takes into account previous transforms to accumulate
+//here it doesn't make much difference, until we combine later
+
+
+rclone.animate({ transform: 't100,100' }, 2000); 
+rclone2.animate({ transform: 'r20,200,200' }, 2000);
+rclone3.animate({ transform: 'r40,200,200' }, 2000);
+
+s.text(350,150,"rotate around 200,200");
+
+rclone4.animate({ transform: 't100,100r20,200,200' }, 2000);
+rclone5.animate({ transform: 't100,100r40,200,200' }, 2000);
+
+s.text(450,250,"combined translate of 100,100 and rotate around 200,200");
+
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

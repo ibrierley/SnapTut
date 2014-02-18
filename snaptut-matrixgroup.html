@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>
+<article>
+  <h1 class="heading">Translating a group</h1>
+  <div class="intro">Lets group some elements and translate them in one go</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+
+//lets draw 2 rects at position 100,100 and then reposition them
+
+var r = s.rect(100,100,100,100,20,20).attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'red' });
+var c = s.circle(50,50,50).attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'blue' });
+
+var g = s.group(r,c);
+
+//g.animate({ transform: 'r360,150,150' }, 1000, mina.bounce );
+var matrix = new Snap.Matrix();
+console.log( matrix );
+matrix.rotate(45);
+
+//g.transform( matrix );
+g.animate({ transform: matrix.toTransformString() },1000);
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

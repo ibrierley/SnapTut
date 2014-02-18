@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>
+<article>
+  <h1 class="heading">Click Handler starting animation</h1>
+  <div class="intro">Here's an example click handler starting an animation</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+
+var r = s.rect(100,100,100,100,20,20).attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'red' });
+var c = s.circle(50,50,50).attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'blue' });
+
+var g = s.group(r,c);
+
+var easeOutCubic = function (t, b, c, d) {
+	t /= d;
+	t--;
+	return c*(t*t*t + 1) + b;
+};
+
+var cubic = function (time, beg, diff, dur) {
+                return diff*((time=time/dur-1)*time*time + 1) + beg;
+}
+
+g.animate({ transform: 'r45,150,150' }, 1000, "cubic-bezier(0,1,1,0)" );
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

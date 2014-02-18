@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Creating a plugin</h1>
+  <div class="intro">Lets create a Snap.svg plugin. Might not be a lot of use yet!</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+(function() {
+
+  Snap.plugin( function( Snap, Element, Paper, global ) {
+	var myPaper = Paper;	
+
+
+	Element.prototype.initSlider = function( params ) {
+			var emptyFunc = function() {};
+			this.data('origTransform', this.transform().local );
+			this.data('onDragEndFunc', params.onDragEndFunc || emptyFunc );
+			this.data('onDragFunc', params.onDragFunc || emptyFunc );
+			this.data('onDragStartFunc', params.onDragStartFunc || emptyFunc );
+		}
+
+        Element.prototype.sliderVert = function( params ) {
+		this.initSlider( params );
+		this.data("maxPosY", params.max); this.data("minPosY", params.min);
+		this.data("posY", params.min); 
+		this.drag( moveDragVert, startDrag, endDrag );
+        }
+        
+        Element.prototype.sliderHoriz = function( params ) {
+		this.initSlider( params );
+		this.data("maxPosX", params.max); this.data("minPosX", params.min);
+		this.data("posX", params.min);
+		this.drag( moveDragHoriz, startDrag, endDrag );
+        }
+
+	Paper.prototype.slider = function( params ) {
+		var myPaper = this;
+		var loaded = Snap.load( params.filename, function( frag ) {
+				var myGroup = myPaper.group().add( frag );
+				myGroup.transform("t" + params.x + "," + params.y);
+				var myCap = myGroup.select("#cap");
+				if( params.type == "h" ) {
+					myCap.sliderHoriz( params );
+				}
+				if( params.type == "v" ) {
+                                        myCap.sliderVert( params.min );
+                                }
+
+			} ); 
+	}
+	
+        var startDrag = function() {
+        	this.data('origPosX', this.data("posX") ); this.data('origPosY', this.data("posY") );
+		this.data("onDragStartFunc")();
+    	}
+    
+    	function updateMovement( el, dx, dy ) {
+        	el.data("posX", +el.data("origPosX") + dx) ; el.data("posY", +el.data("origPosY") + dy);
+		var posX = +el.data("posX"); var posY = +el.data("posY");
+		var maxPosX = +el.data("maxPosX"); var maxPosY = +el.data("maxPosY");
+		var minPosX = +el.data("minPosX"); var minPosY = +el.data("minPosY");
+		if( posX > maxPosX ) { el.data("posX", maxPosX ); };
+		if( posX < minPosX ) { el.data("posX", minPosX ); };
+		if( posY > maxPosY ) { el.data("posY", maxPosY ); };
+		if( posY < minPosY ) { el.data("posY", minPosY ); };
+
+   	}
+   	function moveDragVert( dx,dy ) {
+        	var posY;
+        	updateMovement( this, dx, dy );
+        	posY = this.data("posY");
+        	this.attr({ transform: this.data("origTransform") + (posY ? "T" : "t") + [0,posY] });
+		this.data("onDragFunc")();
+  	};
+
+  	function moveDragHoriz( dx,dy ) {
+        	var posX;
+        	updateMovement( this, dx, dy );
+        	posX = this.data("posX");
+		this.attr({ transform: this.data("origTransform") + (posX ? "T" : "t") + [posX,0] });
+		this.data("onDragFunc")(this);
+  	};
+
+  	function endDrag() {
+		this.data('onDragEndFunc')();
+  	};
+    
+  });
+
+})();
+
+//http://jsfiddle.net/Ge8Eu/
+var s = Snap("#svgout");
+
+var myDragEndFunc = function( el ) {
+	console.log('finished!');
+}
+
+var myDragStartFunc = function() {
+	console.log('starting');
+}
+
+var myDragFunc = function( el ) {
+	gainNode.gain.value = el.data("posX") / 100;
+}
+
+var context = new webkitAudioContext(),
+    sineWave = context.createOscillator(),
+    gainNode = context.createGainNode();
+
+sineWave.frequency.value = 900;
+sineWave.connect(gainNode);
+gainNode.connect(context.destination);
+sineWave.noteOn(0);
+gainNode.gain.value = 0.1;
+
+
+var t = s.slider({ type: "h", filename: "slider.svg", x: "40", y:"240", min: "40", max: "240", onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc } );
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

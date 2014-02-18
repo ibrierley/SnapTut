@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>
+<article>
+  <h1 class="heading">Basic Image Display</h1>
+  <div class="intro">Just getting an image displayed and rotated</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+
+
+var s = Snap("#svgout"); 
+var g = s.g();
+
+var image = g.image("tux.svg", 0,0, 200,200 );
+var clone = image.clone();
+
+clone.transform('t100,200r45');
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

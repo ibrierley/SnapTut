@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>
+<article>
+  <h1 class="heading">Moving Snap stuff</h1>
+  <div class="intro">Now lets Move stuff. We can use 'transform' (or we could set the attr of x,y or cx,cy, but transforms are the same for all elements, so worth getting to know well)</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+
+//lets draw 2 rects at position 100,100 and then reposition them
+
+var r = s.rect(100,100,100,100,20,20).attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'red', 'opacity': 0.2 });
+<xmp>
+//var f = '<foreignObject x="50" y="50" width="200" height="200"><p>BLAH</p></foreignObject>';
+var f = '<p>BLAH</p>';
+</xmp>
+
+var fo = document.createElementNS(s.svgns,"foreignObject");
+fo.setAttribute("x", "9"); 
+fo.setAttribute("y", "9"); 
+fo.setAttribute("width", "200"); 
+fo.setAttribute("height", "200");
+//svgRoot.appendChild(fo);
+
+var g = s.g();
+g.node.appendChild( fo );
+
+//var p = Snap.parse( f );
+
+//fo.appendChild( p.node );
+
+var b = document.createElement("body"); 
+b.innerHTML = f; 
+fo.appendChild(b); 
+
+console.log( g );
+
+console.log( fo );
+//console.log( p );
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

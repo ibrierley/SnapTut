@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg events testing</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>
+<article>
+  <h1 class="heading">Fiddling with Handlers</h1>
+  <div class="intro">Lets just testing getting a basic shape up and filling it</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+// lets add a click handler to the svg, so any events will propogate from the element
+var s = Snap("#svgout").mousedown( function( event ) { 
+				var dragObj = Snap( event.target );
+					if( !dragObj._drag  ) {		// hmm I don't want to use this method, but maybe illustrates idea
+						dragObj.drag();		// we don't want to add a drag twice to same object
+					}
+				}); 
+
+//standard way of drag
+var r = s.rect(100,100,100,100,20,20)
+		.attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'red', 'opacity': 0.2 })
+		.drag();
+
+var c = s.circle(150,50,50).attr({ fill: 'blue' });
+
+Snap.load('oct.svg', function( fragData ) {
+				//var myGroup = s.g();
+				s.g().append( fragData )
+				     .drag(); //// both methods will conflict, so uncomment the drag here or above 
+			});
+
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

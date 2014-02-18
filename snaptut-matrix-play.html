@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Snap Matrix</h1>
+  <div class="intro">Lets fiddle with Snap matrices. Change the group transforms in code and check the matrices from rect.transform()</div>
+  <div class="intro">Note how g1 globalMatrix and rect globalMatrix are added up from each outer localMatrix combined</div>
+  <div class="intro">Useful Matrix links <a href="http://www.w3.org/TR/SVG/coords.html#TransformMatrixDefined">w3.org svg coords and matrix</a></div>
+  <pre class="codestuff"><code contenteditable="true">
+
+//http://stackoverflow.com/questions/16359246/how-to-extract-position-rotation-and-scale-from-matrix-svg
+function deltaTransformPoint(matrix, point)  {
+
+        var dx = point.x * matrix.a + point.y * matrix.c + 0;
+        var dy = point.x * matrix.b + point.y * matrix.d + 0;
+        return { x: dx, y: dy };
+
+}
+
+function decomposeMatrix(matrix) {
+
+        // @see https://gist.github.com/2052247
+
+        // calculate delta transform point
+        var px = deltaTransformPoint(matrix, { x: 0, y: 1 });
+        var py = deltaTransformPoint(matrix, { x: 1, y: 0 });
+
+        // calculate skew
+        var skewX = ((180 / Math.PI) * Math.atan2(px.y, px.x) - 90);
+        var skewY = ((180 / Math.PI) * Math.atan2(py.y, py.x));
+
+        return {
+
+            translateX: matrix.e,
+            translateY: matrix.f,
+            scaleX: Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b),
+            scaleY: Math.sqrt(matrix.c * matrix.c + matrix.d * matrix.d),
+            skewX: skewX,
+            skewY: skewY,
+            rotation: skewX // rotation is the same as skew x
+        };        
+}
+
+var s = Snap("#svgout"); 
+
+var r1 = s.rect(0,0,100,100).attr({ fill: "red", opacity: "0.2", stroke: "black", strokeWidth: "2" }); 
+
+var g1 = s.group( r1 ).transform("t100,100r10");
+var g2 = s.group( g1 ).transform("t100,100r20");
+var g3 = s.group( g2 ).transform("t100,100r30");
+
+console.log( r1.transform() );
+console.log( decomposeMatrix( r1.transform().globalMatrix ) ) ;
+
+s.text( 100, 20, "rect1 localMatrix: " + r1.transform().localMatrix + "... rotation " + decomposeMatrix( r1.transform().localMatrix ).rotation );
+s.text( 100, 40, "rect1 diffMatrix: " + r1.transform().diffMatrix  + "... rotation " + decomposeMatrix( r1.transform().diffMatrix ).rotation );
+s.text( 100, 60, "rect1 globalTransform: " + r1.transform().globalMatrix + "... rotation " + decomposeMatrix( r1.transform().globalMatrix ).rotation );
+
+s.text( 100, 100, "g1 localMatrix: " + g1.transform().localMatrix + "... rotation " + decomposeMatrix( g1.transform().localMatrix ).rotation ) ;
+s.text( 100, 120, "g1 diffMatrix: " + g1.transform().diffMatrix + "... rotation " + decomposeMatrix( g1.transform().diffMatrix ).rotation  );
+s.text( 100, 140, "g1 globalTransform: " + g1.transform().globalMatrix + "... rotation " + decomposeMatrix( g1.transform().globalMatrix ).rotation  );
+
+s.text( 100, 180, "g2 localMatrix: " + g2.transform().localMatrix + "... rotation " + decomposeMatrix( g2.transform().localMatrix ).rotation);
+s.text( 100, 200, "g2 diffMatrix: " + g2.transform().diffMatrix + "... rotation " + decomposeMatrix( g2.transform().diffMatrix ).rotation );
+s.text( 100, 220, "g2 globalTransform: " + g2.transform().globalMatrix + "... rotation " + decomposeMatrix( g2.transform().globalMatrix ).rotation );
+
+s.text( 100, 260, "g3 localMatrix: " + g3.transform().localMatrix + "... rotation " + decomposeMatrix( g3.transform().localMatrix ).rotation);
+s.text( 100, 280, "g3 diffMatrix: " + g3.transform().diffMatrix + "... rotation " + decomposeMatrix( g3.transform().diffMatrix ).rotation );
+s.text( 100, 300, "g3 globalTransform: " + g3.transform().globalMatrix + "... rotation " + decomposeMatrix( g3.transform().globalMatrix ).rotation );
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

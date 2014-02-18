@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Loading, dragging, transforming SVG and matrix</h1>
+  <div class="intro">Lets load an SVG shape and drag bits of it and parent groups about.<br/>
+		This uses the Snap Matrix methods when dragging, as we don't know what transformation it may have.</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+var highlightRect, lastSelectedEl, firstSelectedEl, activeEl, clickHandler, dragging = false;
+
+var dragStart = function ( x,y,ev ) {
+	this.data('origTransform', this.transform().local );
+}
+
+var dragMove = function(dx, dy, ev, x, y) {
+	var tdx, tdy;
+	var snapInvMatrix = this.transform().diffMatrix.invert();
+	snapInvMatrix.e = snapInvMatrix.f = 0; 
+	tdx = snapInvMatrix.x( dx,dy ); tdy = snapInvMatrix.y( dx,dy );
+
+	this.attr({ transform: this.data('origTransform') + (this.data('origTransform') ? "T" : "t") + [ tdx, tdy ] });
+	highlightRect.transform( this.transform().global.toString() );
+}
+
+var dragEnd = function() {
+}
+
+document.onkeypress = function (e) {
+    	e = e || window.event;
+	console.log( e );
+	if( e.keyCode == "110" ) {
+		if( lastSelectedEl.parent().type != 'svg' ) { 
+			highlightEl( lastSelectedEl.parent() );
+		} else {
+			highlightEl( firstSelectedEl );
+		}
+	} else if ( e.keyCode == "97" ) {
+		animateEl( lastSelectedEl );
+	}
+	 
+};
+
+function rectObjFromBB ( bb ) {
+	return { x: bb.x, y: bb.y, width: bb.width, height: bb.height } 
+}
+
+function highlightEl( el ) {
+	if( lastSelectedEl ) { lastSelectedEl.undrag(); }
+	if( highlightRect ) { highlightRect.remove(); }
+
+	highlightRect = s.rect( rectObjFromBB( el.getBBox(1) ) )
+			.attr({ fill: "none", stroke: "red", strokeDasharray: "5,5" });
+
+	highlightRect.transform( el.transform().global.toString() );
+
+
+	lastSelectedEl = el;
+	el.drag( dragMove, dragStart, dragEnd);
+}
+
+function getEventElement( ev ) {
+	if( ev.target.localName == 'svg' ) { return; };
+	var snapEl = Snap(ev.target); 
+	firstSelectedEl = snapEl;
+	highlightEl( snapEl );
+}
+
+function removeClickHandlerFromSVG() {
+	s.unclick();
+}
+
+function addHandlerToSVG() {
+	s.click( function( ev ) { getEventElement( ev ) } )
+}
+
+
+var tux = Snap.load("Bird.svg", function ( loadedFragment ) { 
+						s.append( loadedFragment );
+						addHandlerToSVG();
+						s.text(250,100,"Click to select part of image (like foot), N-key will rotate through parent group and drag");
+					} );  
+
+
+
+
+
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

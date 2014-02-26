@@ -3,6 +3,11 @@ li { 	font-size: 1.2em;
 	line-height: 1.3em;
 }
 
+#container { 
+	width: 400;
+	height: 400;
+}
+
 #navigation {
 	 float: left;
 #  margin-top: -0.2em;

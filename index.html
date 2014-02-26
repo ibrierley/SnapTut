@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+
+
+	</head>
+<body>
+
+<svg id="svgcontainer" width="700" height="700" style="position: absolute; left: 500px; top: 300px"/>
+
+<link href="/snapstyle.css" rel="stylesheet">
+<a href="http://snapsvg.io/docs/">Snap Docs</a>
+
+  <h1 class="heading">Snap.svg stuff</h1>
+
+<h3>My SVG code examples, click RUN after the code on each page to test</h3>
+<nav id="navigation">
+<li>
+	<a href="/snaptut-base.html">Snap Basics</a>
+</li>
+<li>
+        <a href="/snaptut-colors.html">Snap Colors</a>
+</li>
+<li>
+        <a href="/snaptut-image.html">Snap Display an image</a>
+</li>
+<li>
+	<a href="/snaptut-embed-image.html">Snap Embed an image</a>
+</li>
+<li>
+        <a href="/snaptut-title.html">Snap Display a Title</a>
+</li>
+<li>
+	<a href="/snaptut-dasharray.html">Snap Stroke-Dasharray</a>
+</li>
+<li>
+        <a href="/snaptut-transforms.html">Snap Transforms</a>
+</li>
+<li>
+        <a href="/snaptut-drag.html">Snap Drag Handler</a>
+</li>
+<li>
+        <a href="/snaptut-dragscale.html">Snap Drag and Scale example</a>
+</li>
+<li>
+	<a href="/snaptut-masks.html">Snap Mask</a>
+</li>
+<li>
+	<a href="/snaptut-masks2.html">Snap Animated Mask-ClipPath</a>
+</li>
+<li>
+	<a href="/snaptut-load.html">Snap Load SVG</a>
+</li>
+<li>
+	<a href="/snaptut-loadmulti.html">Snap Load SVGs in Order</a>
+</li>
+<li>
+	<a href="/snaptut-pathpointtest.html">Snap Path test if a point inside (with translation)</a>
+</li>
+<li>
+	<a href="/snaptut-animategroup.html">Snap Animate Rotate a group</a>
+</li>
+<li>
+	<a href="/snaptut-transform-groups.html">Snap animate transform grouped groups</a>
+</li>
+<li>
+	<a href="/snaptut-animateframe.html">Snap Animate in a sequence, and multiple anims</a>
+</li>
+<li>
+        <a href="/snaptut-animatenumber.html">Snap Animate Number</a>
+</li>
+<li>
+	<a href="/snaptut-animate-announce.html">Snap Animate Text Announce</a>
+</li>
+<li>
+        <a href="/snaptut-animate-text.html">Snap Animate Text SlowType</a>
+</li>
+<li>
+	<a href="/snaptut-textpath.html">Snap TextPath Animation (0.2 needed)</a>
+</li>
+<li>
+	<a href="/snaptut-animateoffset.html">Snap Animate Dash Offset</a>
+</li>
+<li>
+	<a href="/snaptut-clickanimate.html">Snap Animate On Click</a>
+</li>
+<li>
+        <a href="/snaptut-parse.html">Snap Parse textPath and Animate (old way, works in Opera)</a>
+</li>
+<li>
+	<a href="/snaptut-fobject.html">Snap parse and move a foreign object</a>
+</li>
+<li>
+	<a href="/snaptut-matrix.html">Snap and the Matrix</a>
+</li>
+<li>
+	<a href="/snaptut-matrix-play.html">Snap and combined Matrix transformations</a>
+</li>
+<li>
+	<a href="/snaptut-loadselect.html">Snap advanced matrix and drag on loaded object</a>
+</li>
+<li>
+        <a href="/snaptut-loadselect-move.html">Snap matrix, drag, animate on loaded object</a>
+</li>
+
+<li>
+	<a href="/snaptut-plugin.html">Snap Plugin creation</a>
+</li>
+</nav>
+
+<script>
+
+$( function() {
+
+var s = Snap("#svgcontainer"); 
+
+console.log( s );
+var r0 = s.rect(150,150,100,100,20,20).attr({ fill: "orange", opacity: "0.8", stroke: "black", strokeWidth: "2" });
+var c0 = s.circle(225,225,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4"  });
+var g0 = s.group( r0,c0 );
+g0.animate({ 'transform' : 't250,100r360,225,225' },4000);
+g0.drag();
+
+
+var r1 = s.rect(100,100,100,100,20,20).attr({ fill: "red", opacity: "0.8", stroke: "black", strokeWidth: "2" }); 
+var c1 = s.circle(175,175,10).attr({ fill: "silver", stroke: "black" , strokeWidth: "4"});
+var g1 = s.group( r1,c1 );
+g1.appendTo( g0 );
+g1.animate({ 'transform' : 'r360,175,175' },4000);
+
+
+var r2 = s.rect(50,50,100,100,20,20).attr({ fill: "blue", opacity: "0.8", stroke: "black", strokeWidth: "2" });
+var c2 = s.circle(125,125,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4" });
+var g2 = s.group(r2,c2);
+
+g2.appendTo( g1 );
+g2.animate( { 'transform' : 'r360,125,125' },4000);
+
+
+var r3 = s.rect(0,0,100,100,20,20).attr({ fill: "yellow", opacity: "0.8", stroke: "black", strokeWidth: "2" });
+var c3 = s.circle(75,75,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4" });
+var g3 = s.group(r3,c3);
+
+g3.appendTo( g2 );
+g3.animate( { 'transform' : 'r360,75,75' },4000);
+
+var r4 = s.rect(-50,-50,100,100,20,20).attr({ fill: "green", opacity: "0.8", stroke: "black", strokeWidth: "2" });
+var c4 = s.circle(25,25,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4" });
+var g4 = s.group(r4,c4);
+g4.appendTo( g3 );
+g4.animate( { 'transform' : 'r360,25,25' },4000);
+
+});
+
+</script>
+
+
+
+</body>
+
+

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Loading, dragging, transforming SVG and matrix</h1>
+  <div class="intro">Lets load an SVG shape and drag bits of it and parent groups about.<br/>
+		This uses the Snap Matrix methods when dragging, as we don't know what transformation it may have.</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+var highlightRect, highlightDragRect, lastSelectedEl, firstSelectedEl, activeSet, highlightedBBSet, activeEl, clickHandler, dragging = false, dragCreateMode = false, firstMouseDownPoint;
+
+var dragStart = function ( x,y,ev ) {
+    if( !dragCreateMode ) {
+	this.data('origTransform', this.transform().local );
+	this.data("startingTransform", this.transform().local); /////
+    }
+}
+
+var move = function( ev,x,y ) {
+	if( dragging ) {
+		dragMove(ev,x,y);
+	}
+}
+
+var dragMove = function(dx, dy, ev, x, y) {
+    if( !dragCreateMode ) {
+      if( !this.node ) { return; }
+	var tdx, tdy;
+	var snapInvMatrix = this.transform().diffMatrix.invert() || new Snap.Matrix;
+	snapInvMatrix.e = snapInvMatrix.f = 0; 
+	tdx = snapInvMatrix.x( dx,dy ); tdy = snapInvMatrix.y( dx,dy );
+
+	this.transform( this.data('origTransform') + (this.data('origTransform') ? "T" : "t") + [ tdx, tdy ]  );
+	if( highlightRect ) { highlightRect.transform( this.transform().global.toString() ) };
+    } else {
+	dragCreateMove(dx,dy,ev,x,y);
+    }
+}
+
+var dragEnd = function() {
+    if( !dragCreateMode ) {
+	this.data("finishingTransform", this.transform().local);
+	this.transform( this.data("startingTransform") ); ////
+	animateEl( this );
+    }
+}
+
+var animateEl = function( el ) {	//add check to not animate an already animating element
+	el.animate({ transform: el.data("finishingTransform") }, 2000, mina.bounce, function() { el.animate({ transform: el.data("startingTransform") }, 2000) });
+}
+
+document.onkeypress = function (e) {
+    	e = e || window.event;
+	if( e.keyCode == "110" ) {
+		if( lastSelectedEl.parent().type != 'svg' ) { 
+			highlightEl( lastSelectedEl.parent() );
+		} else {
+			highlightEl( firstSelectedEl );
+		}
+	} else if( e.keyCode == "97" ) {
+		dragCreateMode = true;
+		console.log('dragcreate mode on');
+	} else if( e.keyCode == "98" ) {
+		dragCreateMode = false;
+		console.log( 'dragcreate mode off');
+	} else if( e.keyCode == "99" ) {
+		highlightBBs();
+	} else if( e.keyCode == "100" ) {
+		highlightedBBsRemove();
+	}
+	 
+};
+
+function rectObjFromBB ( bb ) {
+	return { x: bb.x, y: bb.y, width: bb.width, height: bb.height } 
+}
+
+function drawHighlightEl( el ) {
+	var r = s.rect( rectObjFromBB( el.getBBox(1) ) ).attr({ fill: "none", stroke: "silver", strokeDasharray: "5,5" });
+	r.transform( el.transform().global.toString() );
+	return r;
+}
+
+function highlightEl( el ) {
+	if( lastSelectedEl ) { lastSelectedEl.undrag(); }
+	if( highlightRect ) { highlightRect.remove(); }
+
+	highlightRect = s.rect( rectObjFromBB( el.getBBox(1) ) )
+			.attr({ fill: "none", stroke: "red", strokeDasharray: "5,5" });
+
+	highlightRect.transform( el.transform().global.toString() );
+
+
+	lastSelectedEl = el;
+	el.drag( dragMove, dragStart, dragEnd);
+}
+
+function highlightBBs() {
+	highlightedBBSet.remove(); 
+	highlightedBBSet = Snap.set();
+	s.selectAll("*").forEach( function( el ) { 
+		if( typeof( el.node.getBBox ) === "function" ) { 		
+			highlightedBBSet.push( drawHighlightEl( el ) ); 
+		}
+	} );	
+}
+
+function highlightedBBsRemove() {
+	highlightedBBSet.remove();
+}
+
+function getEventElement( ev ) {
+	if( ev.target.localName == 'svg' ) { return; };
+	var snapEl = Snap(ev.target); 
+	firstSelectedEl = snapEl;
+	highlightEl( snapEl );
+}
+
+function removeClickHandlerFromSVG() {
+	s.unclick();
+}
+
+function dragCreateDown( ev,b,c,d,e ) {
+    dragging = true;
+    if( dragCreateMode ) {
+//	ev.preventDefault();
+console.log( ev.target );
+	if( highlightDragRect ) { highlightDragRect.remove(); }
+	var pt = getTransformedPoint( ev );
+	firstMouseDownPoint = pt;
+	highlightDragRect = s.rect(pt.x, pt.y, 0, 0 ).attr({ stroke: 'blue', fill: 'none', strokeWidth: 2, strokeDasharray: "5,5" });
+    }
+}
+
+function getTransformedPoint( ev ) {
+	var ptx;
+	var owner = ev.target.ownerSVGElement || s.node;
+	ptx = owner.createSVGPoint();
+	ptx.x = ev.clientX;
+	ptx.y = ev.clientY;
+	ptx = ptx.matrixTransform(owner.getScreenCTM().inverse());
+	return ptx;
+}
+
+function getTransformedElPoint( el, x, y ) {
+	var pt = {};
+	var myMatrix = el.transform().globalMatrix;
+	pt.x = myMatrix.x( x,y ); pt.y = myMatrix.y( x,y );
+	return pt;
+}
+
+function dragCreateMove( ev,b,c,d,e ) {
+    if( dragCreateMode ) {
+	ev.preventDefault();
+	var pt = getTransformedPoint( ev );
+	if( highlightDragRect ) {
+		highlightDragRect.attr({ width: Math.abs( pt.x - firstMouseDownPoint.x  ), height:  Math.abs( pt.y - firstMouseDownPoint.y) });
+	}
+    }
+}
+
+function dragCreateUp (ev,b,c ) {
+    dragging = false;
+    if( dragCreateMode ) {
+	var pt = getTransformedPoint( ev );
+	var set = s.selectAll("*");
+	var insideSet = Snap.set();
+	set.forEach( function( el ) {
+		if( typeof( el.node.getBBox ) === "function" ) { 
+			var myBB = el.getBBox(1);
+			var pt = getTransformedElPoint( el, myBB.x, myBB.y );
+			var pt2 = getTransformedElPoint( el, myBB.x2, myBB.y2 );
+
+			if( Snap.path.isPointInsideBBox( highlightDragRect.getBBox(1), pt.x, pt.y ) && ( Snap.path.isPointInsideBBox( highlightDragRect.getBBox(1), pt2.x, pt2.y ) ) ) {
+				insideSet.push(el);
+			} 
+		}
+	} );
+	if( highlightDragRect ) { highlightDragRect.remove(); }
+//	insideSet.forEach( function( el ){ el.transform( el.transform() + "t20,20" ) } );
+//	insideSet.forEach( function( el ){ el.animate({ transform: "t120,10" }, 2000) } );	
+	insideSet.forEach( function( el ){  testTrans( el ); } );
+    } 
+}
+
+function testTrans( el ) {
+	console.log( el.transform() );
+}
+
+function addHandlerToSVG() {
+	s.click( function( ev ) { getEventElement( ev ) } )
+	s.mousedown( dragCreateDown );
+	s.mousemove( move );
+	s.mouseup( dragCreateUp );
+}
+
+highlightedBBSet = Snap.set();
+var tux = Snap.load("Bird.svg", function ( loadedFragment ) { 
+						s.append( loadedFragment );
+						addHandlerToSVG();
+						s.text(250,100,"Click to select part of image (like foot), N-key will rotate through parent group and drag");
+						s.text(250,120,"Key C highlight BBoxs to select, D to remove highlighting");
+						s.text(250,140,"Key A Go into Drag Select mode");
+					} );  
+
+
+
+
+
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

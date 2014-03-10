@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="analytics.js" async></script>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Playing with sliders and knobs</h1>
+  <div class="intro">Just as an experiment, I thought sliders may work well with SVG & Snap. Graphics are just using existing clipart to test.</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+(function() {
+
+  Snap.plugin( function( Snap, Element, Paper, global ) {
+	var startDragTarget, startDragElement, startBBox, startScreenCTM;
+
+	Element.prototype.initSlider = function( params ) {
+			var emptyFunc = function() {};
+			this.data('origTransform', this.transform().local );
+			this.data('onDragEndFunc', params.onDragEndFunc || emptyFunc );
+			this.data('onDragFunc', params.onDragFunc || emptyFunc );
+			this.data('onDragStartFunc', params.onDragStartFunc || emptyFunc );
+		}
+
+        Element.prototype.sliderAnyAngle = function( params ) {
+		this.initSlider( params );
+		this.data("maxPosX", params.max); this.data("minPosX", params.min);
+		this.data("posX", params.min);
+		if( params.type == 'knob' ) {
+			this.drag( moveDragKnob, startDrag, endDrag );
+		} else {
+			this.drag( moveDragAnyAngle, startDrag, endDrag );
+		}
+        }
+
+	Paper.prototype.slider = function( params ) {
+		var myPaper = this,  myGroup;
+		var loaded = Snap.load( params.filename, function( frag ) {
+				myGroup = myPaper.group().add( frag );
+				myGroup.transform("t" + params.x + "," + params.y);
+				var myCap = myGroup.select("#cap");
+				myCap.data("sliderId", params.sliderId);
+				myCap.sliderAnyAngle( params );
+				sliderSetAttributes( myGroup, params.attr );
+				sliderSetAttributes( myCap, params.capattr );
+			} ); 
+		return myGroup;
+	}
+
+	function sliderSetAttributes ( myGroup, attr, data ) {
+		var myObj = {};
+		if( typeof attr != 'undefined' ) {
+			for( var prop in attr ) {
+				myObj[ prop ] = attr[prop];
+				myGroup.attr( myObj );
+				myObj = {};
+			};
+		};
+	};
+	
+        var startDrag = function( x, y, ev ) {
+		startDragTarget = ev.target;
+		if( ! ( this.data("startBBox") ) ) {
+			this.data("startBBox", this.getBBox());
+			this.data("startScreenCTM",startDragTarget.getScreenCTM());
+		}
+        	this.data('origPosX', this.data("posX") ); this.data('origPosY', this.data("posY") );
+		this.data("onDragStartFunc")();
+    	}
+    
+    	function updateMovement( el, dx, dy ) {
+		// Below relies on parent being the file svg element, 9
+		var snapInvMatrix = el.parent().transform().globalMatrix.invert();
+		snapInvMatrix.e = snapInvMatrix.f = 0; 
+		var tdx = snapInvMatrix.x( dx,dy ), tdy = snapInvMatrix.y( dx,dy );
+
+        	el.data("posX", +el.data("origPosX") + tdx) ; el.data("posY", +el.data("origPosY") + tdy);
+		var posX = +el.data("posX"); //var posY = +el.data("posY");
+		var maxPosX = +el.data("maxPosX"); 
+		var minPosX = +el.data("minPosX"); 
+
+		if( posX > maxPosX ) { el.data("posX", maxPosX ); };
+		if( posX < minPosX ) { el.data("posX", minPosX ); };
+		el.data("fracX", 1/ ( (maxPosX - minPosX) / el.data("posX") ) );
+   	}
+
+  	function moveDragAnyAngle( dx,dy ) {
+        	var posX;
+        	updateMovement( this, dx, dy );
+        	posX = this.data("posX");
+		this.attr({ transform: this.data("origTransform") + (posX ? "T" : "t") + [posX,0] });
+		this.data("onDragFunc")(this);
+  	};
+
+	function moveDragKnob( dx,dy,x,y, ev ) {
+		var pnt = startDragTarget.ownerSVGElement.createSVGPoint();
+		pnt.x = ev.clientX; pnt.y = ev.clientY;
+		var vPnt = pnt.matrixTransform(this.data("startScreenCTM").inverse());
+		var transformRequestObj = startDragTarget.ownerSVGElement.createSVGTransform();
+
+		OffsetX = vPnt.x; OffsetY = vPnt.y;
+		var deg = Math.atan2(vPnt.x - this.data("startBBox").cx, vPnt.y - this.data("startBBox").cy) * 180 / Math.PI ;
+		deg = deg + 180;
+
+		this.transform('r' + -deg + "," + ( this.data("startBBox").cx - 4 ) + "," + parseInt(this.data("startBBox").cy - -8)  );
+		this.data("fracX", deg/360);
+		this.data("onDragFunc")(this);
+	}
+
+
+
+  	function endDrag() {
+		this.data('onDragEndFunc')();
+  	};
+    
+  });
+
+})();
+
+//http://jsfiddle.net/Ge8Eu/
+var s = Snap("#svgout");
+
+var myDragEndFunc = function( el ) {
+}
+
+var myDragStartFunc = function() {
+}
+
+var myDragFunc = function( el ) {
+	if( el.data("sliderId") == "slider1" ) { r1.attr({ height: el.data("fracX") * 200 }); }
+	if( el.data("sliderId") == "slider2" ) { r2.attr({ height: el.data("fracX") * 200 }); }
+	if( el.data("sliderId") == "slider3" ) { r3.attr({ height: el.data("fracX") * 200 }); }
+	if( el.data("sliderId") == "slider4" ) { r4.attr({ height: el.data("fracX") * 200 }); }
+	if( el.data("sliderId") == "knob1" )   { r5.attr({ height: el.data("fracX") * 200 }); }
+}
+
+
+var r1 = s.rect( 300,300,50,5 ).attr({ fill: "yellow", stroke: "black", strokeWidth: 2 }).transform('r180');
+var r2 = s.rect( 250,300,50,5 ).attr({ fill: "blue", stroke: "black", strokeWidth: 2 }).transform('r180');
+var r3 = s.rect( 350,300,50,5 ).attr({ fill: "green", stroke: "black", strokeWidth: 2 }).transform('r180');
+var r4 = s.rect( 400,300,50,5 ).attr({ fill: "red", stroke: "black", strokeWidth: 2 }).transform('r180');
+var r5 = s.rect( 450,300,50,5 ).attr({ fill: "silver", stroke: "black", strokeWidth: 2 }).transform('r180');
+
+var t1 = s.slider({ sliderId: "slider1", filename: "paw.svg", x: "40", y:"240", min: "0", max: "800", 
+	onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, attr: { transform: 's0.4t-100,-300' } } );
+var t2 = s.slider({ sliderId: "slider2", filename: "slider2.svg", x: "40", y:"200", min: "0", max: "400", 
+	onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc } );
+var test = s.slider({ sliderId: "slider3", filename: "slider2.svg", x: "140", y:"150", min: "0", max: "400", 
+	onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, attr: { transform: 't150,150r45' } });
+var test2 = s.slider({ sliderId: "slider4", filename: "slider2.svg", x: "140", y:"150", min: "0", max: "400", 
+	onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, attr: { transform: 't150,150r180' } });
+
+var knob = s.slider({ sliderId: "knob1", type: "knob", filename: "knob1.svg", x: "140", y:"50", min: "30", max: "340",
+	onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, attr: { transform: 's0.3' } });// , capattr: { transform: 't0,0' } });
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+</body>
+
+

@@ -1,0 +1,179 @@
+
+(function() {
+	var lineAttributes = { stroke: 'red', strokeWidth: 2, strokeDasharray: "5,5" };
+
+	Snap.plugin( function( Snap, Element, Paper, global ) {
+
+		var ftOption = {
+			handleFill: "silver",
+			handleStrokeDash: "5,5",
+			handleStrokeWidth: "2",
+			handleLength: "75",
+			handleRadius: "7",
+			handleLineWidth: 2,
+		};
+
+		Element.prototype.ftCreateHandles = function() {
+			this.ftInit();
+			var freetransEl = this;
+			var bb = freetransEl.getBBox();
+			var rotateDragger = this.paper.circle(bb.cx + bb.width + ftOption.handleLength, bb.cy, ftOption.handleRadius ).attr({ fill: ftOption.handleFill });
+			var translateDragger = this.paper.circle(bb.cx, bb.cy, ftOption.handleRadius ).attr({ fill: ftOption.handleFill });
+
+			var joinLine = freetransEl.ftDrawJoinLine( rotateDragger );
+			var handlesGroup = this.paper.g( joinLine, rotateDragger, translateDragger );
+
+			freetransEl.data( "handlesGroup", handlesGroup );
+			freetransEl.data( "joinLine", joinLine);
+
+			freetransEl.data( "scaleFactor", calcDistance( bb.cx, bb.cy, rotateDragger.attr('cx'), rotateDragger.attr('cy') ) );
+
+			translateDragger.drag( 	elementDragMove.bind(  translateDragger, freetransEl ), 
+						elementDragStart.bind( translateDragger, freetransEl ),
+						elementDragEnd.bind( translateDragger, freetransEl ) );
+
+			freetransEl.undblclick();
+			freetransEl.data("dblclick", freetransEl.dblclick( function() {  this.ftRemoveHandles() } ) );
+
+			rotateDragger.drag( 
+				dragHandleRotateMove.bind( rotateDragger, freetransEl ), 
+				dragHandleRotateStart.bind( rotateDragger, freetransEl  ),
+				dragHandleRotateEnd.bind( rotateDragger, freetransEl  ) 
+			);
+			freetransEl.ftStoreInitialTransformMatrix();
+
+			freetransEl.ftHighlightBB();
+
+		};
+
+		Element.prototype.ftInit = function() {
+			this.data("angle", 0);
+			this.data("scale", 1);
+			this.data("tx", 0);
+			this.data("ty", 0);
+		};
+
+		Element.prototype.ftCleanUp = function() {
+			var myClosureEl = this;
+			var myData = ["angle", "scale", "scaleFactor", "tx", "ty", "otx", "oty", "bb", "bbT", "initialTransformMatrix", "handlesGroup", "joinLine"];
+			myData.forEach( function( el ) { myClosureEl.removeData([el]) });
+		};
+
+		Element.prototype.ftStoreStartCenter = function() {
+			this.data('ocx', this.attr('cx') );
+			this.data('ocy', this.attr('cy') );
+		}
+		
+		Element.prototype.ftStoreInitialTransformMatrix = function() {
+			this.data('initialTransformMatrix', this.transform().localMatrix );
+		};
+
+		Element.prototype.ftGetInitialTransformMatrix = function() {
+			return this.data('initialTransformMatrix');
+		};
+
+		Element.prototype.ftRemoveHandles = function() {
+			this.undblclick();
+			this.data( "handlesGroup").remove();
+			this.data( "bbT" ) && this.data("bbT").remove();
+			this.data( "bb" ) && this.data("bb").remove();
+			this.dblclick( function() { this.ftCreateHandles() } ) ;
+			this.ftCleanUp();
+		};
+
+		Element.prototype.ftDrawJoinLine = function( handle ) {
+			var lineAttributes = { stroke: ftOption.handleFill, strokeWidth: ftOption.handleStrokeWidth, strokeDasharray: ftOption.handleStrokeDash };
+
+			var rotateHandle = handle.parent()[1];
+			var thisBB = this.getBBox();
+
+			var objtps = this.ftTransformedPoint( thisBB.cx, thisBB.cy);
+
+			if( this.data("joinLine") ) {
+				this.data("joinLine").attr({ x1: objtps.x, y1: objtps.y, x2: rotateHandle.attr('cx'), y2: rotateHandle.attr('cy') });
+			} else {
+				return this.paper.line( thisBB.cx, thisBB.cy, handle.attr('cx'), handle.attr('cy') ).attr( lineAttributes );
+			}
+		};
+
+		Element.prototype.ftTransformedPoint = function( x, y ) {
+			var transform = this.transform().diffMatrix;
+			return { x:  transform.x( x,y ) , y:  transform.y( x,y ) };
+		};
+		
+		Element.prototype.ftUpdateTransform = function() {
+			var tstring = "t" + this.data("tx") + "," + this.data("ty") + this.ftGetInitialTransformMatrix().toTransformString() + "r" + this.data("angle") + 'S' + this.data("scale" );		
+			this.attr({ transform: tstring });
+			this.data("bbT") && this.ftHighlightBB();
+		};
+
+		Element.prototype.ftHighlightBB = function() {
+			this.data("bbT") && this.data("bbT").remove();
+			this.data("bb") && this.data("bb").remove();
+			this.data("bbT", this.paper.rect( rectObjFromBB( this.getBBox(1) ) )
+							.attr({ fill: "none", stroke: ftOption.handleFill, strokeDasharray: ftOption.handleStrokeDash })
+							.transform( this.transform().global.toString() ) );
+			this.data("bb", this.paper.rect( rectObjFromBB( this.getBBox() ) )
+							.attr({ fill: "none", stroke: ftOption.handleFill, strokeDasharray: ftOption.handleStrokeDash }) );
+		};
+		
+	});
+
+	function rectObjFromBB ( bb ) {
+		return { x: bb.x, y: bb.y, width: bb.width, height: bb.height } 
+	}
+
+	function elementDragStart( mainEl, x, y, ev ) {
+		this.parent().selectAll('circle').forEach( function( el, i ) {
+				el.ftStoreStartCenter();
+		} );
+		mainEl.data("otx", mainEl.data("tx") || 0);
+		mainEl.data("oty", mainEl.data("ty") || 0);
+	};
+
+	function elementDragMove( mainEl, dx, dy, x, y ) {
+		var dragHandle = this;
+
+		this.parent().selectAll('circle').forEach( function( el, i ) {
+			el.attr({ cx: +el.data('ocx') + dx, cy: +el.data('ocy') + dy });
+			
+		} );
+		mainEl.data("tx", mainEl.data("otx") + +dx);
+		mainEl.data("ty", mainEl.data("oty") + +dy);
+		mainEl.ftUpdateTransform();
+		mainEl.ftDrawJoinLine( dragHandle );
+	}
+
+	function elementDragEnd( mainEl, dx, dy, x, y ) {
+	};
+
+	function dragHandleRotateStart( mainElement ) {
+		this.ftStoreStartCenter();
+	};
+
+	function dragHandleRotateEnd( mainElement ) {
+	};
+
+	function dragHandleRotateMove( mainEl, dx, dy, x, y, event ) {
+		var handle = this;
+		var mainBB = mainEl.getBBox();
+
+		handle.attr({ cx: +handle.data('ocx') + dx, cy: +handle.data('ocy') + dy });
+		mainEl.data("angle", Snap.angle( mainBB.cx, mainBB.cy, handle.attr('cx'), handle.attr('cy') ) - 180);
+
+		var distance = calcDistance( mainBB.cx, mainBB.cy, handle.attr('cx'), handle.attr('cy') );
+
+		mainEl.data("scale", distance / mainEl.data("scaleFactor") );
+
+		mainEl.ftUpdateTransform();
+		mainEl.ftDrawJoinLine( handle );	
+	};
+
+	function calcDistance(x1,y1,x2,y2) {
+		return Math.sqrt( Math.pow( (x1 - x2), 2)  + Math.pow( (y1 - y2), 2)  );
+	}
+
+})();
+
+
+

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="analytics.js" async></script>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>&nbsp;&nbsp;<a href="/">Contact Me</a>
+<article>
+  <h1 class="heading">Snap Dragging with a plugin, taking into account currentmatrix</h1>
+  <div class="intro">Not sure if this is a good way, but works for a lot of bits I play with</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+
+Snap.plugin( function( Snap, Element, Paper, global ) {
+
+    Element.prototype.altDrag = function() {
+        this.drag( dragMove, dragStart, dragEnd );
+        return this;
+    }
+        
+    var dragStart = function ( x,y,ev ) {
+	    this.data('ot', this.transform().local );
+    }
+ 
+    var dragMove = function(dx, dy, ev, x, y) {
+	    var tdx, tdy;
+	    var snapInvMatrix = this.transform().diffMatrix.invert();
+	    snapInvMatrix.e = snapInvMatrix.f = 0; 
+	    tdx = snapInvMatrix.x( dx,dy ); tdy = snapInvMatrix.y( dx,dy );
+	    this.transform( this.data('ot') + "t" + [ tdx, tdy ]  );
+
+    }
+
+    var dragEnd = function() {
+    }
+
+
+});
+
+s.attr({ viewBox: "0 0 100 100" });
+
+var t1 = s.text( 0, 20, "red = altDrag" );
+var t2 = s.text( 0, 35, "blue = normal drag" );
+var r1 = s.rect(0,0,20,20).transform('t50,50').attr({ fill: "red" }).altDrag();
+var g1 = s.g( r1 ).transform('r45');
+
+var r2 = s.rect(20,20,20,20).transform('t50,50').attr({ fill: " blue" }).drag();
+var g2 = s.g( r2 ).transform('r45');
+
+
+
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

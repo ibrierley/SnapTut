@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Freetransform attempt</title>
+<script src="analytics.js" async></script>
+	</head>
+<body>
+<div id="menu">
+	<div id="fileobject">
+		<input type="file" id="filesInputEl" name="files[]"  multiple /><div id="list"></div>
+		<input type="button" id="outputsvg" value="Output SVG" onclick="outputSVG();"/>
+	</div>
+
+</div>
+<svg id="sliderarea" width="600" height="50"></svg>
+<svg id="svgout" width="600" height="500"></svg>
+
+<link href="/snapstyle.css" rel="stylesheet">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<script src="snaptut-freetransformplay.js"></script>
+<script src="snaptut-create-slider-knob.js"></script> 
+<script>
+
+var menu = Snap("#menu");
+
+function setFileHandler( myId, callback ) {
+	var inputObj = document.getElementById( myId );
+	inputObj.addEventListener('change', handleFileSelect.bind( null, callback ), false);
+}
+
+function handleFileSelect( callback, evt ) {
+//console.log(this,evt,callback);
+	var files = evt.target.files; // FileList object
+    	for (var i = 0, f; f = files[i]; i++) {
+
+      	var reader = new FileReader();
+        reader.onload = function( evt ) {
+                var contents = evt.target.result;
+//		console.log( contents );
+		if( callback instanceof Function ) {
+			callback( contents );
+		}
+      	};
+
+      	reader.onerror = function(event) {
+                	console.log(' couldnt not read file. Code ' + event.target.error.code);
+     		};
+      	reader.readAsText(f);
+    	};
+};
+
+function loadSVG( contents ) {
+	console.log('loadsvg', contents);
+	var frag = Snap.parse( contents );
+	var g = s.g();
+	g.append( frag ).ftCreateHandles();
+}
+
+function outputSVG() {
+	// add code to remove handles
+	console.log(s.toString());
+};
+
+setFileHandler( 'filesInputEl', loadSVG );
+
+var s = Snap("#svgout");
+
+var myEl = s.rect(5,5,200,20).transform('t20,20r20');
+
+myEl.ftCreateHandles();
+
+Snap.load( "Dreaming_tux.svg", function( frag ) { 
+	var g = s.g();
+	g.append(frag);
+	g.ftCreateHandles();
+	} );
+
+
+
+var sliderArea = Snap("#sliderarea");
+var slider1 = sliderArea.slider({ sliderId: "slider1", capSelector: "#cap", filename: "paw.svg", 
+		x: "5", y:"5", min: "0", max: "800", 
+//		onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, 
+		attr: { transform: 's1t0,0' } } );
+
+
+</script>
+</body>
+
+

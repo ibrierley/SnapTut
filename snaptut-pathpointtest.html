@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="analytics.js"></script>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>&nbsp;&nbsp;<a href="/">Contact Me</a>
+<article>
+  <h1 class="heading">Drawing path, translating and testing points inside</h1>
+  <div class="intro">Lets get an SVG path displayed and another translated, then we can add it to our canvas.<br/>
+		We can hit test by amending our point to match the translation</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"), c, x, y, myTranslateX = 200, myTranslateY = 100;
+
+var myPathString = "M 60 0 L 120 0 L 180 60 L 180 120 L 120 180 L 60 180 L 0 120 L 0 60 Z";
+
+var p  = s.path( myPathString );
+var p2 = s.path( myPathString ).transform("t" + myTranslateX + "," + myTranslateY);
+
+
+for( var count = 0; count < 500; count++ ) {
+	x = Math.random() * 800; y = Math.random() * 400;
+
+	c = s.circle( x,y,5 ).attr({ fill: "silver" });
+
+	// basic path
+	if( Snap.path.isPointInside( myPathString, x,y ) ) {
+		c.attr({ fill: "#ff0000" });
+	}
+
+	// matching against path as though it was translated
+	if( Snap.path.isPointInside( myPathString, x - myTranslateX, y - myTranslateY ) ) {
+                c.attr({ fill: "#0000ff" });
+        }
+
+
+
+}
+  </defs> 
+
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

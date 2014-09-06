@@ -11,16 +11,19 @@
 <div id="container"></div>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 <script src="snap.svg.js"></script>
-<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>&nbsp;&nbsp;<a href="/">Contact Me</a>
 <article>
   <h1 class="heading">Playing with sliders and knobs</h1>
   <div class="intro">Just as an experiment, I thought sliders may work well with SVG & Snap. Graphics are just using existing clipart to test.</div>
+  <div class="intro">Note, there is a bug on knobs if zoomed/scrolled in browser, so this is currently only a work in progress</div>
   <pre class="codestuff"><code contenteditable="true">
 
 (function() {
 
   Snap.plugin( function( Snap, Element, Paper, global ) {
 	var startDragTarget, startDragElement, startBBox, startScreenCTM;
+
+	// Initialise our slider with its basic transform and drag funcs
 
 	Element.prototype.initSlider = function( params ) {
 			var emptyFunc = function() {};
@@ -30,23 +33,29 @@
 			this.data('onDragStartFunc', params.onDragStartFunc || emptyFunc );
 		}
 
+	// initialise the params, and set up our max and min. Check if its a slider or knob to see how we deal
+
         Element.prototype.sliderAnyAngle = function( params ) {
 		this.initSlider( params );
 		this.data("maxPosX", params.max); this.data("minPosX", params.min);
+		this.data("centerOffsetX", params.centerOffsetX); this.data("centerOffsetY", params.centerOffsetY)
 		this.data("posX", params.min);
 		if( params.type == 'knob' ) {
 			this.drag( moveDragKnob, startDrag, endDrag );
 		} else {
-			this.drag( moveDragAnyAngle, startDrag, endDrag );
+			this.drag( moveDragSlider, startDrag, endDrag );
 		}
         }
+
+	// load in the slider svg file, and transform the group element according to our params earlier.
+        // Also choose which id is the cap
 
 	Paper.prototype.slider = function( params ) {
 		var myPaper = this,  myGroup;
 		var loaded = Snap.load( params.filename, function( frag ) {
 				myGroup = myPaper.group().add( frag );
 				myGroup.transform("t" + params.x + "," + params.y);
-				var myCap = myGroup.select("#cap");
+				var myCap = myGroup.select( params.capSelector );
 				myCap.data("sliderId", params.sliderId);
 				myCap.sliderAnyAngle( params );
 				sliderSetAttributes( myGroup, params.attr );
@@ -54,6 +63,8 @@
 			} ); 
 		return myGroup;
 	}
+
+	// Extra func, to pass through extra attributes passed when creating the slider
 
 	function sliderSetAttributes ( myGroup, attr, data ) {
 		var myObj = {};
@@ -65,6 +76,8 @@
 			};
 		};
 	};
+
+	// Our main slider startDrag, store our initial matrix settings. 
 	
         var startDrag = function( x, y, ev ) {
 		startDragTarget = ev.target;
@@ -76,6 +89,10 @@
 		this.data("onDragStartFunc")();
     	}
     
+
+	// move the cap, our dx/dy will need to be transformed to element matrx. Test for min/max
+	// set a value 'fracX' which is a fraction of amount moved 0-1 we can use later.
+
     	function updateMovement( el, dx, dy ) {
 		// Below relies on parent being the file svg element, 9
 		var snapInvMatrix = el.parent().transform().globalMatrix.invert();
@@ -92,7 +109,10 @@
 		el.data("fracX", 1/ ( (maxPosX - minPosX) / el.data("posX") ) );
    	}
 
-  	function moveDragAnyAngle( dx,dy ) {
+
+	// Call the matrix checks above, and set any transformation
+
+  	function moveDragSlider( dx,dy ) {
         	var posX;
         	updateMovement( this, dx, dy );
         	posX = this.data("posX");
@@ -100,17 +120,19 @@
 		this.data("onDragFunc")(this);
   	};
 
+
+	// drag our knob. Currently there is no min/max working, need to add a case for testing rotating anticlockwise beyond 0
+
 	function moveDragKnob( dx,dy,x,y, ev ) {
 		var pnt = startDragTarget.ownerSVGElement.createSVGPoint();
 		pnt.x = ev.clientX; pnt.y = ev.clientY;
 		var vPnt = pnt.matrixTransform(this.data("startScreenCTM").inverse());
 		var transformRequestObj = startDragTarget.ownerSVGElement.createSVGTransform();
 
-		OffsetX = vPnt.x; OffsetY = vPnt.y;
 		var deg = Math.atan2(vPnt.x - this.data("startBBox").cx, vPnt.y - this.data("startBBox").cy) * 180 / Math.PI ;
 		deg = deg + 180;
-
-		this.transform('r' + -deg + "," + ( this.data("startBBox").cx - 4 ) + "," + parseInt(this.data("startBBox").cy - -8)  );
+//		this.transform('r' + -deg + "," + ( this.data("startBBox").cx - 4 ) + "," + parseInt(this.data("startBBox").cy - -8)  );
+		this.transform('r' + -deg + "," + ( this.data("startBBox").cx - this.data("centerOffsetX") ) + "," + parseInt(this.data("startBBox").cy - -this.data("centerOffsetY") )  );
 		this.data("fracX", deg/360);
 		this.data("onDragFunc")(this);
 	}
@@ -125,7 +147,11 @@
 
 })();
 
+
+
+//// Test code using the above funcs...
 //http://jsfiddle.net/Ge8Eu/
+
 var s = Snap("#svgout");
 
 var myDragEndFunc = function( el ) {
@@ -134,32 +160,47 @@ var myDragEndFunc = function( el ) {
 var myDragStartFunc = function() {
 }
 
+// what we want to do when the slider changes. They could have separate funcs as the call back or just pick the right element
 var myDragFunc = function( el ) {
-	if( el.data("sliderId") == "slider1" ) { r1.attr({ height: el.data("fracX") * 200 }); }
-	if( el.data("sliderId") == "slider2" ) { r2.attr({ height: el.data("fracX") * 200 }); }
-	if( el.data("sliderId") == "slider3" ) { r3.attr({ height: el.data("fracX") * 200 }); }
-	if( el.data("sliderId") == "slider4" ) { r4.attr({ height: el.data("fracX") * 200 }); }
-	if( el.data("sliderId") == "knob1" )   { r5.attr({ height: el.data("fracX") * 200 }); }
+	if( el.data("sliderId") == "slider1" ) { meter1.attr({ height: el.data("fracX") * 200 }); }
+	if( el.data("sliderId") == "slider2" ) { meter2.attr({ height: el.data("fracX") * 200 }); }
+	if( el.data("sliderId") == "slider3" ) { meter3.attr({ height: el.data("fracX") * 200 }); }
+	if( el.data("sliderId") == "slider4" ) { meter4.attr({ height: el.data("fracX") * 200 }); }
+	if( el.data("sliderId") == "knob1" )   { meter5.attr({ height: el.data("fracX") * 200 }); }
 }
 
+// just some shapes/data we will move when the knob or slider moves
+var meter1 = s.rect( 300,300,50,5 ).attr({ fill: "yellow", stroke: "black", strokeWidth: 2 }).transform('r180');
+var meter2 = s.rect( 250,300,50,5 ).attr({ fill: "blue", stroke: "black", strokeWidth: 2 }).transform('r180');
+var meter3 = s.rect( 350,300,50,5 ).attr({ fill: "green", stroke: "black", strokeWidth: 2 }).transform('r180');
+var meter4 = s.rect( 400,300,50,5 ).attr({ fill: "red", stroke: "black", strokeWidth: 2 }).transform('r180');
+var meter5 = s.rect( 450,300,50,5 ).attr({ fill: "silver", stroke: "black", strokeWidth: 2 }).transform('r180');
 
-var r1 = s.rect( 300,300,50,5 ).attr({ fill: "yellow", stroke: "black", strokeWidth: 2 }).transform('r180');
-var r2 = s.rect( 250,300,50,5 ).attr({ fill: "blue", stroke: "black", strokeWidth: 2 }).transform('r180');
-var r3 = s.rect( 350,300,50,5 ).attr({ fill: "green", stroke: "black", strokeWidth: 2 }).transform('r180');
-var r4 = s.rect( 400,300,50,5 ).attr({ fill: "red", stroke: "black", strokeWidth: 2 }).transform('r180');
-var r5 = s.rect( 450,300,50,5 ).attr({ fill: "silver", stroke: "black", strokeWidth: 2 }).transform('r180');
 
-var t1 = s.slider({ sliderId: "slider1", filename: "paw.svg", x: "40", y:"240", min: "0", max: "800", 
-	onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, attr: { transform: 's0.4t-100,-300' } } );
-var t2 = s.slider({ sliderId: "slider2", filename: "slider2.svg", x: "40", y:"200", min: "0", max: "400", 
-	onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc } );
-var test = s.slider({ sliderId: "slider3", filename: "slider2.svg", x: "140", y:"150", min: "0", max: "400", 
-	onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, attr: { transform: 't150,150r45' } });
-var test2 = s.slider({ sliderId: "slider4", filename: "slider2.svg", x: "140", y:"150", min: "0", max: "400", 
-	onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, attr: { transform: 't150,150r180' } });
+//create our sliders
+var slider1 = s.slider({ sliderId: "slider1", capSelector: "#cap", filename: "paw.svg", 
+		x: "40", y:"240", min: "0", max: "800", 
+		onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, 
+		attr: { transform: 's0.4t-100,-300' } } );
 
-var knob = s.slider({ sliderId: "knob1", type: "knob", filename: "knob1.svg", x: "140", y:"50", min: "30", max: "340",
-	onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, attr: { transform: 's0.3' } });// , capattr: { transform: 't0,0' } });
+var slider2 = s.slider({ sliderId: "slider2", capSelector: "#cap", filename: "slider2.svg", 
+		x: "40", y:"200", min: "0", max: "400", 
+		onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc } );
+
+var sliderOnAngle = s.slider({ sliderId: "slider3", capSelector: "#cap", filename: "slider2.svg", 
+		x: "140", y:"150", min: "0", max: "400", 
+		onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, 
+		attr: { transform: 't150,150r45' } });
+
+var sliderInverted = s.slider({ sliderId: "slider4", capSelector: "#cap", filename: "slider2.svg", 
+		x: "200", y:"200", min: "0", max: "400", 
+		onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, 
+		attr: { transform: 't50,150r180' } });
+
+var knob = s.slider({ sliderId: "knob1", type: "knob", capSelector: "#cap", filename: "knob1.svg", 
+		x: "140", y:"50", min: "30", max: "340", centerOffsetX: "4", centerOffsetY: "8",
+		onDragEndFunc: myDragEndFunc, onDragStartFunc: myDragStartFunc, onDragFunc: myDragFunc, 
+		attr: { transform: 's0.3' } });// , capattr: { transform: 't0,0' } });
 
    </code>
 	<button class="run">Edit/Run</button>

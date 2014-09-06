@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="analytics.js" async></script>
+	</head>
+<body>
+<div id="info1">Info1</div><div id="info2">Info2</div>
+<div id="info3">Info3</div><div id="info4">Info4</div>
+<div id="info5">Info5</div>
+<svg id="svgout"></svg>
+
+<link href="/snapstyle.css" rel="stylesheet">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<script>
+
+var s = Snap("#svgout"); 
+
+(function() {
+	var lineAttributes = { stroke: 'red', strokeWidth: 2, strokeDasharray: "5,5" };
+
+	Snap.plugin( function( Snap, Element, Paper, global ) {
+
+		Element.prototype.createHandles = function() {
+
+			var freetransEl = this;
+			var bb = freetransEl.getBBox();
+			var rotateDragger = this.paper.circle(bb.cx + bb.width + 100, bb.cy, 10).attr({ fill: "red" });
+			var translateDragger = this.paper.circle(bb.cx, bb.cy, 10).attr({ fill: "red" });
+
+			var joinLine = freetransEl.drawJoinLine( rotateDragger );
+			var handlesGroup = this.paper.g( joinLine, rotateDragger, translateDragger );
+			freetransEl.data( "handlesGroup", handlesGroup );
+			freetransEl.data( "joinLine", joinLine);
+
+			freetransEl.data( "scaleFactor", calcDistance( bb.cx, bb.cy, rotateDragger.attr('cx'), rotateDragger.attr('cy') ) );
+
+			translateDragger.drag( 	elementDragMove.bind(  translateDragger, freetransEl ), 
+						elementDragStart.bind( translateDragger, freetransEl ),
+						elementDragEnd.bind( translateDragger, freetransEl ) );
+
+
+			rotateDragger.drag( 
+				dragHandleRotateMove.bind( rotateDragger, freetransEl ), 
+				dragHandleRotateStart.bind( rotateDragger, freetransEl  ) 
+			);
+freetransEl.storeInitialTransformMatrix();
+
+		};
+
+		Element.prototype.getStartTransform = function() {
+			return this.data("origTransform");
+		};
+
+		Element.prototype.getStartTransformMatrix = function() {
+                        return this.data("origTransformMatrix");
+                };
+
+
+		Element.prototype.storeStartCenter = function() {
+			this.data('ocx', this.attr('cx') );
+			this.data('ocy', this.attr('cy') );
+		}
+		
+		Element.prototype.storeInitialTransformMatrix = function() {
+			this.data('initialTransformMatrix', this.transform().localMatrix );
+		};
+
+		Element.prototype.getInitialTransformMatrix = function() {
+			return this.data('initialTransformMatrix');
+		};
+
+		Element.prototype.storeStartTransform = function() {
+			this.data('origTransform', this.transform() );
+			this.data('origTransformMatrix', this.transform().localMatrix );
+		};
+
+		Element.prototype.storeDragTransform = function( t ) {
+			this.data('dragTransform', t );
+		};
+
+		Element.prototype.getDragTransform = function( ) {
+			return this.data('dragTransform');
+		};
+
+		Element.prototype.removeHandles = function() {
+			this.data( "handlesGroup ").remove();
+		};
+
+		Element.prototype.drawJoinLine = function( handle, joinLine ) {
+			var rotateHandle = handle.parent()[1];
+			var thisBB = this.getBBox();
+s.circle(handle.attr('cx'),  handle.attr('cy'), 3).attr({ fill: 'green' });
+
+			var objtps = this.transformedPoint( thisBB.cx, thisBB.cy);
+s.circle(objtps.x,  objtps.y, 2).attr({ fill: 'yellow' });
+
+			if( this.data("joinLine") ) {
+				this.data("joinLine").attr({ x1: objtps.x, y1: objtps.y, x2: rotateHandle.attr('cx'), y2: rotateHandle.attr('cy') });
+			} else {
+				return this.paper.line( thisBB.cx, thisBB.cy, handle.attr('cx'), handle.attr('cy') ).attr( lineAttributes );
+			}
+		};
+
+		Element.prototype.transformedPoint = function( x, y ) {
+			var transform = this.transform().diffMatrix;
+			return { x:  transform.x( x,y ) , y:  transform.y( x,y ) };
+		};
+
+		
+	});
+
+	function transformPoint( el, x, y ) {
+		var transform = el.transform().diffMatrix;
+		var tx = transform.x( x,y ); var ty = transform.y( x,y );
+		s.circle(tx,  ty, 10).attr({ fill: 'blue' });
+		
+	}
+
+	function elementDragStart( transEl, dx, dy, x, y ) {
+
+transEl.storeInitialTransformMatrix();
+			var handles = this;
+			this.parent().selectAll('circle').forEach( function( el, i ) {
+				el.storeStartCenter();
+			} );
+//			transEl.storeStartTransform();
+////transEl.storeInitialTransformMatrix();
+	};
+
+	function elementDragMove( mainEl, dx, dy, x, y ) {
+		var dragHandle = this;
+
+		this.parent().selectAll('circle').forEach( function( el, i ) {
+			el.attr({ cx: +el.data('ocx') + dx, cy: +el.data('ocy') + dy });
+			
+		} );
+//		var newMainTransform = mainEl.getStartTransformMatrix().toTransformString() + ( mainEl.getStartTransformMatrix().toTransformString()  ? "T" : "t" ) + [dx, dy]
+		var newMainTransform = mainEl.getInitialTransformMatrix().toTransformString() + ( mainEl.getInitialTransformMatrix().toTransformString()  ? "T" : "t" ) + [dx, dy]
+
+		mainEl.attr({ transform: newMainTransform });
+		mainEl.drawJoinLine( dragHandle );
+	}
+
+	function elementDragEnd( mainEl, dx, dy, x, y ) {
+		mainEl.storeInitialTransformMatrix();
+	};
+
+	function dragHandleRotateStart( mainElement ) {
+		var handle = this;
+		handle.storeStartCenter();
+//		mainElement.storeStartTransform();
+	};
+
+	function dragHandleRotateEndHandler() {
+	};
+
+	function dragHandleRotateMove( freetransEl, dx, dy, x, y, event ) {
+console.log('draghandlerotatemove');
+		var handle = this;
+		handle.attr({ cx: +handle.data('ocx') + dx, cy: +handle.data('ocy') + dy });
+		dragHandleRotateTransform( freetransEl, handle );
+		freetransEl.drawJoinLine( handle );	
+	};
+
+	function dragHandleRotateTransform( mainEl, handle ) {
+		var mainBB = mainEl.getBBox();
+
+var initialMatrix = mainEl.getInitialTransformMatrix();
+var tp = mainEl.transformedPoint( mainBB.cx, mainBB.cy );
+
+$("#info1").html('cx ' + handle.attr('cx'));
+$("#info3").html('obj local ' + mainEl.transform().local);
+$("#info4").html('obj global ' + mainEl.transform().global);
+$("#info5").html('obj diff ' + mainEl.transform().diffMatrix);
+$("#info2").html('element diff ' + mainEl.transform().diffMatrix);
+
+var bbrect = s.rect(mainBB.x, mainBB.y, mainBB.width, mainBB.height).attr({ fill: 'none', stroke: 'blue', opacity: 0.2 });;
+
+		var myAngle = Snap.angle( mainBB.cx, mainBB.cy, handle.attr('cx'), handle.attr('cy') ) - 180;
+//var myAngle = Snap.angle( tp.x, tp.y, handle.attr('cx'), handle.attr('cy') );
+		var distance = calcDistance( mainBB.cx, mainBB.cy, handle.attr('cx'), handle.attr('cy') );
+//var distance = calcDistance( tp.x, tp.y, handle.attr('cx'), handle.attr('cy') );
+
+		var scale = distance / mainEl.data("scaleFactor"); 
+		var startTransform = mainEl.getStartTransform();
+
+////var myTranslate = 't' + startTransform.localMatrix.e + ',' +  startTransform.localMatrix.f;
+
+
+		mainEl.attr({ transform: initialMatrix.toTransformString() + 'r' + myAngle + 'S' + scale } );
+	};
+
+
+	function calcDistance(x1,y1,x2,y2) {
+		return Math.sqrt( Math.pow( (x1 - x2), 2)  + Math.pow( (y1 - y2), 2)  );
+	}
+
+})();
+
+var myEl = s.rect(20,20,200,20).transform('t20r20');
+//var myEl = s.polygon("220,10 300,210 170,250 123,234").transform('r20');
+myEl.createHandles();
+myEl;
+//setTimeout( function() { rect.removeHandles() }, 2000 );
+
+</script>
+</body>
+
+

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="analytics.js"></script>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Loading SVG</h1>
+  <div class="intro">Lets get an SVG shape loaded and displayed. We need a callback for when the file is loaded, then we can add it to our canvas.<br/>
+		Note, it gets loaded into Snap as a fragment.</div>
+  <pre class="codestuff"><code contenteditable="true">
+// Tux image is from creative commons, I didn't create it!
+
+var s = Snap("#svgout"); 
+var tux = Snap.load("Dreaming_tux.svg", function ( loadedFragment ) { 
+						s.append( loadedFragment );	
+						var tux = s.select("#tux");
+						console.log( tux );
+						console.log( tux.innerSVG() );
+					} );  
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

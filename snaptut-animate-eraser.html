@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="analytics.js" async></script>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Basic Test</h1>
+  <div class="intro">Lets just testing getting a basic shape up and filling it</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+
+var svgString1 = '<path id="s3" d="M 60 0 L 120 0 L 180 60 L 180 120 L 120 180 L 60 180 L 0 120 L 0 60 Z"  stroke="blue"/>';
+var svgString2 = '<path id="s3" d="M 60 0 L 120 0 L 180 60 L 180 120 L 120 180 L 60 180 L 0 120 L 0 60 Z"  stroke="red"/>';
+  
+
+function Pencil( options ) {
+  
+  var that = this;
+  Snap.load( options.filename, function( frag ) {
+    that.el = s.g();
+    that.el.append( frag );
+    that.el.transform( options.transform );
+    that.el.data('origTransform', options.transform);
+
+  } );
+
+};  
+  
+  
+//var svgString1 = '<path id="s3" d="M 60 0 L 120 0 "  stroke="blue"/>';
+
+//svgString, transformString, timeBetweenDraws, speedFactor
+function Drawing( options )  {
+    this.options = options;
+    this.fragment = Snap.parse( options.svgString );
+    this.pathArray = this.fragment.selectAll('path');
+    this.group = s.g().transform( options.transformString ).drag();
+    this.timeBetweenDraws = options.timeBetweenDraws;
+    this.speedFactor = options.speedFactor;
+    this.pencil = options.pencil;
+};
+
+Drawing.prototype.init = function( svgString, transformString ) {
+      this.group.clear();
+      this.currentPathIndex = 0;
+};
+
+Drawing.prototype.endReached = function() {
+    if( ( this.currentPathIndex >= this.pathArray.length ) || ( this.currentPathIndex < 0) )     {
+        return true;
+    };
+};
+
+Drawing.prototype.callOnFinished = function() {
+}
+
+Drawing.prototype.initDraw = function() {
+    this.init();
+    this.draw();
+};
+
+  
+  
+  
+Drawing.prototype.reverseDraw = function() {		
+	this.init();
+	var drawGroup = this.group;
+	this.pathArray.forEach( function( el ) { 
+		drawGroup.append(el);		// draw it first, so we can slowly delete it, may want to add a check to see if it already exists then we may not need to
+	} );
+	this.currentPathIndex = this.pathArray.length - 1;
+	this.options.reverse = true;
+	this.draw();
+}
+
+Drawing.prototype.quickDraw = function() {
+    this.init();
+    this.timeBetweenDraws = 0;
+    this.draw();
+};
+
+  
+Drawing.prototype.draw = function() {         // this is the main animation bit
+
+  if( this.endReached() ) { 
+        if( this.callOnFinished ) {
+            this.callOnFinished();
+            return 
+        };
+    };
+
+  var myPath = this.pathArray[ this.currentPathIndex ] ;
+    var myDrawing = this;
+
+    this.leng = myPath.getTotalLength();
+    this.group.append( myPath );
+     myPath.attr({
+       fill: 'none',
+       "stroke-dasharray": this.leng + " " + this.leng,
+       "stroke-dashoffset": this.leng
+     });
+
+    if( myPath.attr('stroke') == 'none' ) {
+	myPath.attr({ stroke: '#000000' });
+    }
+
+    var that = this;
+    var closurePath = myPath;
+    var start, end;
+  
+    if( this.options.reverse ) {
+        myPath.attr({ "stroke-dashoffset": 0 });
+	    this.currentPathIndex--;
+        start = 0; end = that.leng;
+      
+    } else {
+      this.currentPathIndex++;
+        start = that.leng; end = 0;
+    };
+      
+ 
+    (function() {
+
+      var closurePath = myPath;
+
+      Snap.animate( start, end, function(value) {
+            closurePath.attr({ "stroke-dashoffset": value });
+            var movePoint = Snap.path.getPointAtLength( closurePath, that.leng - value );
+
+            myDrawing.drawPencil( closurePath, movePoint);   
+
+          },
+          that.leng * that.speedFactor, mina.easeout, that.draw.bind( that )
+      );
+    })();   
+
+};
+  
+
+Drawing.prototype.drawPencil = function( path, point ) {  
+
+  if( typeof(path) == 'undefined' ) { return };
+  if( typeof( this.pencil ) == 'undefined' ) { return };
+  if( typeof( this.pencil.el ) == 'undefined' ) { return };
+  
+  // This bit currently not working, was trying to account for scale of transform
+  //var myInvMatrix = path.transform().globalMatrix;
+  //var TransX = myInvMatrix.x(point.x, point.y);
+  //var TransY = myInvMatrix.y(point.x, point.y); 
+  
+  if(  this.pencil.el ) {
+              this.pencil.el.attr({ transform:  't' + (point.x) + ',' + (point.y) + this.pencil.el.data('origTransform') });
+   };
+};
+
+
+  
+  
+function loadPaths( filename, object, callback ) {
+	Snap.load( filename, function( frag ) {
+		object.fragment = frag;
+		object.pathArray = frag.selectAll('path');
+		callback();
+	});
+	
+}
+
+  
+
+  
+
+  
+
+
+
+  //NOTE: SCALING PART OF FUNCTION IS BROKEN SINCE UPDATES, DONT USE...
+  
+var myPencil = new Pencil( { 
+    filename: 'https://dl.dropboxusercontent.com/u/140225334/eraser.svg', 
+    transform: 't-20,-350' 
+});
+  
+var myPencil2 = new Pencil( { 
+    filename: 'https://dl.dropboxusercontent.com/u/140225334/eraser.svg', 
+    transform: 't-20,-350' 
+});
+
+var myDrawing1 = new Drawing({
+  svgString: svgString1, 
+  transformString: 't0,0', 
+  timeBetweenDraws: 0,
+  speedFactor: 10,
+  pencil: myPencil
+});
+  
+ // myDrawing1.initDraw();
+//var myDrawing2 = new Drawing( svgString2, 't69,50 s1.8', 3000 );
+//var myDrawing3 = new Drawing( svgString2, 't150,150 s1.8', 5000 );
+//var myDrawing4 = new Drawing( svgString1, 't50,50 s1.8', 5000 );
+
+myDrawing1.initDraw();//
+myDrawing1.callOnFinished = function() { myDrawing1.callOnFinished = function() {}; 
+                                         myDrawing1.reverseDraw() };
+  
+var drawing = new Drawing({
+  svgString: undefined,
+  transformString: 't0,-100',
+  timeBetweenDraws: 0,
+  speedFactor: 10,
+  pencil: myPencil2
+});
+loadPaths( 'https://dl.dropboxusercontent.com/u/140225334/6.svg', drawing, drawing.initDraw.bind( drawing ) );
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+</body>
+
+

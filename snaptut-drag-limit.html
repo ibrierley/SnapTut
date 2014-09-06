@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="analytics.js" async></script>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Drag limiter</h1>
+  <div class="intro">Limiting drag handler plugin (not tested much yet)</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+s.attr({ viewBox: "0 0 100 100" });
+(function() {
+
+  Snap.plugin( function( Snap, Element, Paper, global ) {
+
+	Element.prototype.limitDrag = function( params ) {
+		this.data('minx', params.minx ); this.data('miny', params.miny );
+		this.data('maxx', params.maxx ); this.data('maxy', params.maxy );
+		this.data('x', params.x );    this.data('y', params.y );
+		this.data('ibb', this.getBBox() );
+		this.data('ot', this.transform().local );
+		this.drag( limitMoveDrag, limitStartDrag );
+		return this;	
+	};
+
+	function limitMoveDrag( dx, dy ) {
+		var tdx, tdy;
+		var sInvMatrix = this.transform().globalMatrix.invert();
+	    	sInvMatrix.e = sInvMatrix.f = 0; 
+	    	tdx = sInvMatrix.x( dx,dy ); tdy = sInvMatrix.y( dx,dy );
+
+		this.data('x', +this.data('ox') + tdx);
+		this.data('y', +this.data('oy') + tdy);
+		if( this.data('x') > this.data('maxx') - this.data('ibb').width  ) 
+			{ this.data('x', this.data('maxx') - this.data('ibb').width  ) };
+		if( this.data('y') > this.data('maxy') - this.data('ibb').height ) 
+			{ this.data('y', this.data('maxy') - this.data('ibb').height ) };
+		if( this.data('x') < this.data('minx') ) { this.data('x', this.data('minx') ) };
+        	if( this.data('y') < this.data('miny') ) { this.data('y', this.data('miny') ) };
+		this.transform( this.data('ot') + "t" + [ this.data('x'), this.data('y') ]  );
+	};
+
+	function limitStartDrag( x, y, ev ) {
+		this.data('ox', this.data('x')); this.data('oy', this.data('y'));
+	};
+  });
+})();
+
+
+var myCircle2 = s.circle(20,20,20).attr({ fill: 'blue' }).limitDrag({ x: 0, y: 0, minx: 0, miny: 0, maxx: 100, maxy: 100 });
+var myRect = s.rect(0,0,30,30).attr({ fill: 'yellow' }).limitDrag({ x: 0, y: 0, minx: 0, miny: 0, maxx: 100, maxy: 100 });
+
+var corner1 = s.circle(0,0,2);
+var corner2 = s.circle(100,100,2);
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+</body>
+
+

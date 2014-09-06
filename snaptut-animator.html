@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Freetransform attempt</title>
+<script src="analytics.js" async></script>
+	</head>
+<body>
+<svg id="svgout"></svg>
+
+<link href="/snapstyle.css" rel="stylesheet">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<script src="snaptut-freetransform.js"></script>
+<script>
+
+var s = Snap("#svgout");
+
+var myEl = s.rect(280,80,200,20).transform('t20,20r20');
+
+var text = s.text(250,20,"Double click main object to add/remove handles, drag centre handle or outer handles to move.");
+var text2 = s.text(250,40,"Note this isnt well tested, so dont use in anything important as is!");
+
+myEl.ftCreateHandles();
+
+Snap.load( "Dreaming_tux.svg", function( frag ) { 
+	var g = s.g();
+	g.append(frag);
+	g.ftCreateHandles();
+	} );
+
+
+</script>
+</body>
+
+

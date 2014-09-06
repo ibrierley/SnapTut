@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Using a Mask in Snap</h1>
+  <div class="intro">Draw a big circle as a mask and animate objects</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+var s = Snap("#svgout"); 
+
+var bigC = s.circle(100,100,75).attr({ stroke: 'silver', 'strokeWidth': 40, fill: 'silver' });
+var bigC2 = s.circle(250,250,75).attr({ stroke: 'silver', 'strokeWidth': 40, fill: 'silver' });
+var clipG = s.group(bigC,bigC2);
+
+var r = s.rect(100,100,100,100,20,20).attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'red' });
+var c = s.circle(50,50,50).attr({ stroke: '#123456', 'strokeWidth': 20, fill: 'blue' });
+
+var g = s.group(r,c); 
+
+g.attr({ mask: clipG });
+
+g.animate({ transform: 'r360,150,150' }, 3000, mina.bounce );
+//clipG.animate({ transform: 't200,0' }, 3000, mina.bounce, function() { clipG.animate({ transform: 't0,0' }, 3000, mina.bounce)  }  );
+
+s.mousemove( mouseMove );
+
+function getTransformedPoint( ev ) {
+	var ptx;
+	var owner = ev.target.ownerSVGElement || s.node;
+	ptx = owner.createSVGPoint();
+	ptx.x = ev.clientX; ptx.y = ev.clientY;
+	ptx = ptx.matrixTransform(owner.getScreenCTM().inverse());
+	return ptx;
+}
+
+function mouseMove( ev ) {
+	console.log( ev );
+	console.log( getTransformedPoint( ev ) );
+	var ptx = getTransformedPoint( ev );
+	var bb = clipG.getBBox();
+console.log( bb );
+	var tx = parseInt( ptx.x + bb.width / 2 );
+console.log( tx );
+	clipG.transform('t' + parseInt( ptx.x - bb.width / 2 ) + ',' + parseInt( ptx.y - bb.height / 2 ) );
+//clipG.transform('t' + ptx.x + ',' + ptx.y);
+}
+
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

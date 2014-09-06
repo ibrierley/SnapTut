@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="analytics.js" async></script>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>&nbsp;&nbsp;<a href="/">Contact Me</a>
+<article>
+  <h1 class="heading">Basic Animation via SVG Markup (not Snap)</h1>
+  <div class="intro">Lets just testing getting svg markup animation going</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+
+        Snap.plugin( function( Snap, Element, Paper, global ) {
+
+		function setDefaults( attrs, defaults ) {
+			for( var k in defaults ) { 
+                                if( typeof attrs[k] === 'undefined' ) {
+                                        attrs[ k ] = defaults[ k ];
+                                };
+                        };
+			return attrs;
+		};
+
+                Paper.prototype.markupAnimate = function( attr ) {
+			var defaults = { attributeType: "CSS", repeatCount: "indefinite" };
+			return this.el('animate').attr( setDefaults( attr, defaults ) );	
+                };
+
+		Paper.prototype.markupAnimateTransform = function( attr ) {
+			var defaults = { attributeName: 'transform', attributeType: "XML", additive: "replace" };
+			return this.el('animateTransform').attr( setDefaults( attr, defaults ) );
+		};
+
+		Paper.prototype.markupAnimateColor = function( attr ) {
+                        var defaults = { attributeName: 'fill', attributeType: "XML", repeatCount: "indefinite" };
+                        return this.el('animateColor').attr( setDefaults( attr, defaults ) );
+                };
+
+		Paper.prototype.markupAnimateMotion = function( attr ) {
+                        var defaults = { repeatCount: "indefinite" };
+			return this.el('animateMotion', setDefaults( attr, defaults ) );
+                };
+		
+		Paper.prototype.markupMpath = function( attr ) {
+			var defaults = {};
+			return this.el('mpath', setDefaults( attr, defaults ) );
+		};
+
+		Element.prototype.markupAnimateMotion = function( attr, mpath ) {
+			var pathString = attr[ 'path' ];
+			delete attr[ 'path' ];
+			var el = this.paper.markupAnimateMotion( attr ) ;
+			if( pathString ) {
+				el.node.setAttribute( 'path', pathString );
+			};
+			if( mpath ) {
+				el.append( mpath );
+			};
+			this.append( el );
+                        return el;
+                }; 
+		
+		Element.prototype.markupAnimateColor = function( attr ) {
+                        return this.append( this.paper.markupAnimateColor( attr ) );
+                };
+
+		Element.prototype.markupAnimateTransform = function( attr ) {
+			return this.append( this.paper.markupAnimateTransform( attr ) );
+		};
+
+		Element.prototype.markupAnimate = function( attr ) {
+			return this.append( this.paper.markupAnimate( attr ) );
+		};
+	});
+
+var s = Snap("#svgout"); 
+
+
+var r = s.rect(20,20,20,20);
+//r.markupAnimate( { attributeName: "opacity", from: "1", to: "0", dur: "5s", repeatCount: "indefinite" });
+//r.markupAnimateTransform({ type: 'rotate', from: "0", to: "90", dur: "5s", additive: "replace" });
+var mpath = s.markupMpath({ "xlink:href": "#path1" });
+var path = s.path("M100,100L200,200Z").attr({ stroke: "blue", id: "path1" });
+//r.markupAnimateMotion( { dur: "5s", fill: "freeze", "path": "M100,100L200,200Z" }, mpath );
+r.markupAnimateMotion( { dur: "5s", fill: "freeze" }, mpath );
+
+
+
+console.log( r.outerSVG() );
+
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+</body>
+
+

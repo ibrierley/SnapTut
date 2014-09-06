@@ -11,7 +11,7 @@ li { 	font-size: 1.2em;
 #navigation {
 	 float: left;
 #  margin-top: -0.2em;
-width: 600px;
+width: 500px;
   border-right:10px;
   background: #cccccc;
   border: 6px solid #eeeeee;
@@ -72,6 +72,14 @@ width: 600px;
         margin-left: 12%;
         border: 1px dashed #2F6FAB;
 
+}
+
+#menu {
+	color: black;
+	width: 70%;
+	margin-left: 12%;
+	border: 1px dashed #2F6FAB;
+	height: 50px;
 }
 
 #htmlraw {

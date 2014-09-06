@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     	<head>
-<title>Snap.svg Tutorial</title>
+<title>Snap.svg Examples and Tutorials</title>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 <script src="snap.svg.js"></script>
 
@@ -9,14 +9,13 @@
 	</head>
 <body>
 
-<svg id="svgcontainer" width="700" height="700" style="position: absolute; left: 500px; top: 300px"/>
+<svg id="svgcontainer" width="800" height="640" style="position: absolute; left: 600px; top: 200px"/>
 
 <link href="/snapstyle.css" rel="stylesheet">
 <a href="http://snapsvg.io/docs/">Snap Docs</a>
 
-  <h1 class="heading">Snap.svg stuff</h1>
+  <h1 class="heading">Snap.svg examples and tutorials</h1>
 
-<h3>My SVG code examples, click RUN after the code on each page to test</h3>
 <nav id="navigation">
 <li>
 	<a href="/snaptut-base.html">Snap Basics</a>
@@ -43,6 +42,12 @@
         <a href="/snaptut-drag.html">Snap Drag Handler</a>
 </li>
 <li>
+        <a href="/snaptut-dragplugin.html">Snap Drag plugin, may work with existing viewbox or matrix</a>
+</li>
+<li>
+	<a href="/snaptut-drag-limit.html">Snap Drag plugin with limits, may worth with viewBox</a>
+</li>
+<li>
         <a href="/snaptut-dragscale.html">Snap Drag and Scale example</a>
 </li>
 <li>
@@ -55,7 +60,13 @@
 	<a href="/snaptut-load.html">Snap Load SVG</a>
 </li>
 <li>
+        <a href="/snaptut-load-animate.html">Snap Load and Animate SVG</a>
+</li>
+<li>
 	<a href="/snaptut-loadmulti.html">Snap Load SVGs in Order</a>
+</li>
+<li>
+	<a href="/snaptut-loadmulti-callback.html">Snap Load SVGs in Order with Callback</a>
 </li>
 <li>
 	<a href="/snaptut-pathpointtest.html">Snap Path test if a point inside (with translation)</a>
@@ -85,6 +96,9 @@
 	<a href="/snaptut-animateoffset.html">Snap Animate Dash Offset</a>
 </li>
 <li>
+	<a href="/snaptut-animateoffsetloadreverse.html">Snap Animate Dash Offset with reverse
+</li>
+<li>
 	<a href="/snaptut-clickanimate.html">Snap Animate On Click</a>
 </li>
 <li>
@@ -105,9 +119,20 @@
 <li>
         <a href="/snaptut-loadselect-move.html">Snap matrix, drag, animate on loaded object</a>
 </li>
-
+<li>
+	<a href="/snaptut-create-slider-knob.html">Snap sliders and knobs example</a>
+</li>
+<li>
+        <a href="/snaptut-graffle.html">Snap conversion of Graffle</a>
+</li>
 <li>
 	<a href="/snaptut-plugin.html">Snap Plugin creation</a>
+</li>
+<li>
+        <a href="/snaptut-freetransform.html">Snap Free Transform Plugin </a>
+</li>
+<li>
+	<a href="/snaptut-freetransform-viewbox.html">Snap Free Transform Plugin (I think this will work with viewbox)</a>
 </li>
 </nav>
 
@@ -116,12 +141,16 @@
 $( function() {
 
 var s = Snap("#svgcontainer"); 
+var myCharArray, textElArray, myTrans, offsetY = 50;
 
-console.log( s );
+var borderRect = s.rect(0,0,800,640,10,10).attr({ stroke: "silver", fill: "silver", strokeWidth: "3" });
+
+//// DRAW RECT ANIMATION
+
 var r0 = s.rect(150,150,100,100,20,20).attr({ fill: "orange", opacity: "0.8", stroke: "black", strokeWidth: "2" });
 var c0 = s.circle(225,225,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4"  });
 var g0 = s.group( r0,c0 );
-g0.animate({ 'transform' : 't250,100r360,225,225' },4000);
+g0.animate({ 'transform' : 't250,120r360,225,225' },4000);
 g0.drag();
 
 
@@ -153,11 +182,59 @@ var g4 = s.group(r4,c4);
 g4.appendTo( g3 );
 g4.animate( { 'transform' : 'r360,25,25' },4000);
 
+
+/// SLOW TEXT 
+var myTextStringArray = ["SVG code examples, click RUN on each page", ""];
+var contactStringArray = ["Contact Me", ""];
+var emailStringArray = ["gibbathehutt@gmail.com"];
+var myGroup = s.g().attr({ fill: "red", "font-size": "25px" });
+
+function slowDisplay(x, y, stringArray) {
+	for( var a=0; a < stringArray.length; a++) {
+
+		myCharArray = stringArray[a].split('');
+		textElArray = myGroup.text(x, y, myCharArray).attr({ opacity : 1, y: (a * 20 + offsetY) });
+	
+	};
+};
+
+slowDisplay( 100,0, myTextStringArray );
+
+myTspans = myGroup.selectAll("tspan").attr({
+    	opacity: 0
+});
+
+function animFunc( element ) {
+	Snap.animate(0,1, function( value ) {
+		element.attr({ opacity: value, rotate: (value * 360) });
+	}, 600 );
+}
+
+for( var i=0; i < myTspans.length; i++ ) {
+	setTimeout( 
+			animFunc.bind(null, myTspans[i]) 
+		, i * 60);
+}
+
+var contact = s.text(350,620,"ians.coding@gmail.com, twitter: @ianscoding");
+//contact.hover( function() { 
+//	this.node.textContent = 'ians.coding@gmail.com, twitter: @ianscoding';
+//} );
+
 });
 
 </script>
 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
+  ga('create', 'UA-48783044-1', 'dabbles.info');
+  ga('send', 'pageview');
+
+</script>
 
 </body>
 

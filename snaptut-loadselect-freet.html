@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="analytics.js"></script>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<script src="snaptut-markup-animate.js"></script>
+<script src="snaptut-freetransform-vb-test.js"></script>
+
+<a href="http://snapsvg.io/docs/">Snap Docs</a>&nbsp;&nbsp;<a href="/">More SVG Dabbles</a>
+<article>
+  <h1 class="heading">Loading, dragging, transforming SVG and matrix</h1>
+  <div class="intro">Lets load an SVG shape and drag bits of it and parent groups about.<br/>
+		This uses the Snap Matrix methods when dragging, as we don't know what transformation it may have.</div>
+  <pre class="codestuff"><code contenteditable="true">
+
+// you will need to load script http://svg.dabbles.info/snaptut-freetransform-vb-test.js here after snap.svg.js
+
+var s = Snap("#svgout"); 
+var highlightRect, lastSelectedEl, firstSelectedEl, activeEl, clickHandler, dragging = false ;
+
+
+var animateEl = function( el ) {	//add check to not animate an already animating element
+	el.animate({ transform: el.data("finishingTransform") }, 2000, mina.bounce, function() { el.animate({ transform: el.data("startingTransform") }, 2000) });
+}
+
+//var testrect = s.rect(0,0,200,200).attr({ fill: "black" });
+//testrect.markupAnimateTransform( { type: 'translate', from: '0,0', to: '200,200', dur: "2s", begin: "1s" } );
+
+
+
+document.onkeypress = function (e) {
+    	e = e || window.event;
+	if( e.keyCode == "110" ) {
+		if( lastSelectedEl.parent().type != 'svg' ) { 
+			lastSelectedEl.ftRemoveHandles();
+			lastSelectedEl.parent().ftCreateHandles();
+			lastSelectedEl = lastSelectedEl.parent();
+		} else {
+			lastSelectedEl.ftRemoveHandles();
+			firstSelectedEl.ftCreateHandles();
+			lastSelectedEl = firstSelectedEl;
+		}
+	} else if ( e.keyCode == "109" ) {
+		var startingTrans = lastSelectedEl.ftGetInitialTransformMatrix();
+		var currentTrans = lastSelectedEl.transform().localMatrix;
+var el = lastSelectedEl;
+		el.transform( startingTrans );
+//		el.animate({ transform: currentTrans }, 1000 );
+
+	}
+	 
+};
+
+function rectObjFromBB ( bb ) {
+	return { x: bb.x, y: bb.y, width: bb.width, height: bb.height } 
+}
+
+
+function getEventElement( ev, paper ) {
+	if( ev.target.localName == 'svg' ) { console.log('event on svg, returning'); return; };
+	var snapEl = Snap(ev.target); 
+	firstSelectedEl = snapEl;
+	lastSelectedEl = snapEl;
+	if( snapEl.hasHandles() ) {
+console.log('has handles, removing');
+var currentTransform = snapEl.transform().localMatrix;
+var oldTransform = snapEl.ftGetInitialTransformMatrix()
+		snapEl.ftRemoveHandles();
+console.log( oldTransform );
+snapEl.transform( oldTransform );
+console.log( oldTransform, currentTransform );
+////snapEl.animate({ transform: currentTransform }, 1000 );
+
+console.log( snapEl );
+var myAnimate = {
+	attr: 'transform', 
+	oldValue: oldTransform, 
+	newValue: currentTransform, 
+	id: snapEl.attr('id'), 
+	cssSelector: fullPath( snapEl.node),
+	duration: 1000
+	};
+console.log( myAnimate );
+console.log( 'fp', fullPath( snapEl.node) );
+
+savedAnimationRun( myAnimate );
+
+	} else {
+console.log('no handles, adding');
+		snapEl.ftCreateHandles( paper );
+
+	}
+}
+
+function addHandlerToSVG() {
+	s.dblclick( function( ev ) { getEventElement( ev, s ) } )
+}
+
+
+var tux = Snap.load("Bird.svg", function ( loadedFragment ) { 
+						s.append( loadedFragment );
+						s.text(250,100,"Click to select part of image (like foot), N-key will rotate through parent group and drag");
+						addHandlerToSVG();
+					} );  
+
+var rect = s.rect(200,200,200,200);
+
+
+function savedAnimationRun( animObj ) {
+	var snapAnimBefore = {}, snapAnimAfter = {};
+	var el = s.select( animObj.cssSelector );
+	snapAnimBefore[ animObj[ 'attr' ]] = animObj.oldValue;
+	snapAnimAfter[ animObj[ 'attr' ]] = animObj.newValue;
+	el.attr(snapAnimBefore);
+	el.animate(snapAnimAfter, animObj.duration);
+console.log( snapAnimBefore );
+}
+
+function fullPath(el){
+  var names = [];
+  while (el.parentNode){
+    if (el.id){
+      names.unshift('#'+el.id);
+      break;
+    }else{
+//      if (el==el.ownerDocument.documentElement) names.unshift(el.tagName);
+//	if (el==el.ownerSVGElement.documentElement) names.unshift(el.tagName);
+if (el==el.nearestViewportElement.documentElement) names.unshift(el.tagName);
+      else{
+        for (var c=1,e=el;e.previousElementSibling;e=e.previousElementSibling,c++);
+        names.unshift(el.tagName+":nth-child("+c+")");
+      }
+      el=el.parentNode;
+    }
+  }
+  return names.join(" > ");
+}
+
+//console.log(  fullPath( $('input')[0] ) );
+
+
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

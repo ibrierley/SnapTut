@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Tutorial</title>
+<script src="analytics.js" async></script>
+	</head>
+<body>
+
+<object id="tux" data="Dreaming_Tux.svg" width="600" height="600" type="image/svg+xml"></object>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<div id="container"></div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="snap.svg.js"></script>
+<a href="http://snapsvg.io/docs/">Snap Docs</a>
+<article>
+  <h1 class="heading">Snap testing object element</h1>
+  <div class="intro"></div>
+  <pre class="codestuff"><code contenteditable="true">
+
+
+var s = Snap("#svgout"); 
+
+var tux = Snap("#tux");
+var tuxContent = tux.node.contentDocument;
+
+var sTux = Snap( tuxContent.firstChild );
+var tuxPaths = sTux.selectAll('path');
+
+tuxPaths.forEach( function( el ) { el.attr({ opacity: 0.2 }) });
+
+   </code>
+	<button class="run">Edit/Run</button>
+</pre>
+</article>
+
+<div class="intro">SVGout area...</div>
+<div class="output">
+	<svg id="svgout" width="400" height="400"></svg>
+</div>
+
+<div class="intro">The actual svg markup looks like this (when you've clicked on run)....</div>
+<div id="htmlraw"></div>
+
+<script src="snaptut.js"></script></script>
+<script src="hijs.js"></script>
+
+</body>
+
+

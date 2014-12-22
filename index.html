@@ -1,186 +1,70 @@
-<!DOCTYPE html>
-<html>
-    	<head>
-<title>Snap.svg Examples and Tutorials</title>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-<script src="snap.svg.js"></script>
-
-
-	</head>
-<body>
-
-<svg id="svgcontainer" width="800" height="640" style="position: absolute; left: 600px; top: 200px"/>
-
-<link href="/snapstyle.css" rel="stylesheet">
-<a href="http://snapsvg.io/docs/">Snap Docs</a>
-
-  <h1 class="heading">Snap.svg examples and tutorials</h1>
-
-<nav id="navigation">
-<li>
-	<a href="/snaptut-base.html">Snap Basics</a>
-</li>
-<li>
-        <a href="/snaptut-colors.html">Snap Colors</a>
-</li>
-<li>
-        <a href="/snaptut-image.html">Snap Display an image</a>
-</li>
-<li>
-	<a href="/snaptut-embed-image.html">Snap Embed an image</a>
-</li>
-<li>
-        <a href="/snaptut-title.html">Snap Display a Title</a>
-</li>
-<li>
-	<a href="/snaptut-dasharray.html">Snap Stroke-Dasharray</a>
-</li>
-<li>
-        <a href="/snaptut-transforms.html">Snap Transforms</a>
-</li>
-<li>
-        <a href="/snaptut-drag.html">Snap Drag Handler</a>
-</li>
-<li>
-        <a href="/snaptut-dragplugin.html">Snap Drag plugin, may work with existing viewbox or matrix</a>
-</li>
-<li>
-	<a href="/snaptut-drag-limit.html">Snap Drag plugin with limits, may worth with viewBox</a>
-</li>
-<li>
-        <a href="/snaptut-dragscale.html">Snap Drag and Scale example</a>
-</li>
-<li>
-	<a href="/snaptut-masks.html">Snap Mask</a>
-</li>
-<li>
-	<a href="/snaptut-masks2.html">Snap Animated Mask-ClipPath</a>
-</li>
-<li>
-	<a href="/snaptut-load.html">Snap Load SVG</a>
-</li>
-<li>
-        <a href="/snaptut-load-animate.html">Snap Load and Animate SVG</a>
-</li>
-<li>
-	<a href="/snaptut-loadmulti.html">Snap Load SVGs in Order</a>
-</li>
-<li>
-	<a href="/snaptut-loadmulti-callback.html">Snap Load SVGs in Order with Callback</a>
-</li>
-<li>
-	<a href="/snaptut-pathpointtest.html">Snap Path test if a point inside (with translation)</a>
-</li>
-<li>
-	<a href="/snaptut-animategroup.html">Snap Animate Rotate a group</a>
-</li>
-<li>
-	<a href="/snaptut-transform-groups.html">Snap animate transform grouped groups</a>
-</li>
-<li>
-	<a href="/snaptut-animateframe.html">Snap Animate in a sequence, and multiple anims</a>
-</li>
-<li>
-        <a href="/snaptut-animatenumber.html">Snap Animate Number</a>
-</li>
-<li>
-	<a href="/snaptut-animate-announce.html">Snap Animate Text Announce</a>
-</li>
-<li>
-        <a href="/snaptut-animate-text.html">Snap Animate Text SlowType</a>
-</li>
-<li>
-	<a href="/snaptut-textpath.html">Snap TextPath Animation (0.2 needed)</a>
-</li>
-<li>
-	<a href="/snaptut-animateoffset.html">Snap Animate Dash Offset</a>
-</li>
-<li>
-	<a href="/snaptut-animateoffsetloadreverse.html">Snap Animate Dash Offset with reverse
-</li>
-<li>
-	<a href="/snaptut-clickanimate.html">Snap Animate On Click</a>
-</li>
-<li>
-        <a href="/snaptut-parse.html">Snap Parse textPath and Animate (old way, works in Opera)</a>
-</li>
-<li>
-	<a href="/snaptut-fobject.html">Snap parse and move a foreign object</a>
-</li>
-<li>
-	<a href="/snaptut-matrix.html">Snap and the Matrix</a>
-</li>
-<li>
-	<a href="/snaptut-matrix-play.html">Snap and combined Matrix transformations</a>
-</li>
-<li>
-	<a href="/snaptut-loadselect.html">Snap advanced matrix and drag on loaded object</a>
-</li>
-<li>
-        <a href="/snaptut-loadselect-move.html">Snap matrix, drag, animate on loaded object</a>
-</li>
-<li>
-	<a href="/snaptut-create-slider-knob.html">Snap sliders and knobs example</a>
-</li>
-<li>
-        <a href="/snaptut-graffle.html">Snap conversion of Graffle</a>
-</li>
-<li>
-	<a href="/snaptut-plugin.html">Snap Plugin creation</a>
-</li>
-<li>
-        <a href="/snaptut-freetransform.html">Snap Free Transform Plugin </a>
-</li>
-<li>
-	<a href="/snaptut-freetransform-viewbox.html">Snap Free Transform Plugin (I think this will work with viewbox)</a>
-</li>
-</nav>
-
+<?php include('header.php'); ?>
+<?php include('menu.php'); ?>
+<div class="demoarea" height="600px" width="600px">
+<svg id="svgcontainer" width="100%" height="100%" viewBox="0 0 800 800" class="pivotblock"/>
+</div>
 <script>
-
-$( function() {
-
-var s = Snap("#svgcontainer"); 
+//$( function() {
+var s = Snap("#svgcontainer");
 var myCharArray, textElArray, myTrans, offsetY = 50;
 
-var borderRect = s.rect(0,0,800,640,10,10).attr({ stroke: "silver", fill: "silver", strokeWidth: "3" });
+//var borderRect = s.rect(0,0,600,600,10,10).attr({ stroke: "silver", fill: "silver", strokeWidth: "3" });
 
 //// DRAW RECT ANIMATION
 
+var g = s.group().transform('t250,120');
+
 var r0 = s.rect(150,150,100,100,20,20).attr({ fill: "orange", opacity: "0.8", stroke: "black", strokeWidth: "2" });
-var c0 = s.circle(225,225,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4"  });
-var g0 = s.group( r0,c0 );
-g0.animate({ 'transform' : 't250,120r360,225,225' },4000);
+var c0 = s.circle(225,225,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4"  }).attr({ id: 'c0' });
+var g0 = s.group( r0,c0 ).attr({ id: 'g0' });
+//g0.animate({ 'transform' : 't250,120r360,225,225' },4000);
+g0.appendTo( g );
+g0.animate({ 'transform' : 'r360,225,225' },4000);
 g0.drag();
 
 
-var r1 = s.rect(100,100,100,100,20,20).attr({ fill: "red", opacity: "0.8", stroke: "black", strokeWidth: "2" }); 
-var c1 = s.circle(175,175,10).attr({ fill: "silver", stroke: "black" , strokeWidth: "4"});
-var g1 = s.group( r1,c1 );
-g1.appendTo( g0 );
+var r1 = s.rect(100,100,100,100,20,20).attr({ fill: "red", opacity: "0.8", stroke: "black", strokeWidth: "2" });
+var c1 = s.circle(175,175,10).attr({ fill: "silver", stroke: "black" , strokeWidth: "4"}).attr({ id: 'c1' });
+var g1 = s.group( r1,c1 ).attr({ id: 'g1' });;
+g1.appendTo( g0 ).attr({ id: 'g1' });
 g1.animate({ 'transform' : 'r360,175,175' },4000);
 
 
 var r2 = s.rect(50,50,100,100,20,20).attr({ fill: "blue", opacity: "0.8", stroke: "black", strokeWidth: "2" });
-var c2 = s.circle(125,125,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4" });
-var g2 = s.group(r2,c2);
+var c2 = s.circle(125,125,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4" }).attr({ id: 'c2' });
+var g2 = s.group(r2,c2).attr({ id: 'g2' });
 
 g2.appendTo( g1 );
 g2.animate( { 'transform' : 'r360,125,125' },4000);
 
 
 var r3 = s.rect(0,0,100,100,20,20).attr({ fill: "yellow", opacity: "0.8", stroke: "black", strokeWidth: "2" });
-var c3 = s.circle(75,75,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4" });
-var g3 = s.group(r3,c3);
+var c3 = s.circle(75,75,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4" }).attr({ id: 'c3' });
+var g3 = s.group(r3,c3).attr({ id: 'g3' });
 
 g3.appendTo( g2 );
 g3.animate( { 'transform' : 'r360,75,75' },4000);
 
 var r4 = s.rect(-50,-50,100,100,20,20).attr({ fill: "green", opacity: "0.8", stroke: "black", strokeWidth: "2" });
-var c4 = s.circle(25,25,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4" });
-var g4 = s.group(r4,c4);
+var c4 = s.circle(25,25,10).attr({ fill: "silver", stroke: "black", strokeWidth: "4" }).attr({ id: 'c4' });
+var g4 = s.group(r4,c4).attr({ id: 'g4' });
 g4.appendTo( g3 );
-g4.animate( { 'transform' : 'r360,25,25' },4000);
+g4.animate( { 'transform' : 'r360,25,25' },4000, mina.linear, blurInOut);
+
+var f = s.filter(Snap.filter.blur(0, 0));
+var filterChild = f.node.children[0];
+
+r3.attr({ filter: s.filter( Snap.filter.blur(10,5) ) });
+
+function blurInOut() {
+	s.attr({ filter: f });
+	Snap.animate( 0, 10, function( value ) { filterChild.attributes[0].value = value + ',' + value;  }, 2000, mina.linear, blurIn );
+};
+
+function blurIn() {
+	Snap.animate( 10, 0, function( value ) { filterChild.attributes[0].value = value + ',' + value;  }, 2000, mina.linear, function() { s.attr({ filter: '' }) } );
+};
+
 
 
 /// SLOW TEXT 
@@ -190,52 +74,39 @@ var emailStringArray = ["gibbathehutt@gmail.com"];
 var myGroup = s.g().attr({ fill: "red", "font-size": "25px" });
 
 function slowDisplay(x, y, stringArray) {
-	for( var a=0; a < stringArray.length; a++) {
+        for( var a=0; a < stringArray.length; a++) {
 
-		myCharArray = stringArray[a].split('');
-		textElArray = myGroup.text(x, y, myCharArray).attr({ opacity : 1, y: (a * 20 + offsetY) });
-	
-	};
+                myCharArray = stringArray[a].split('');
+                textElArray = myGroup.text(x, y, myCharArray).attr({ opacity : 1, y: (a * 20 + offsetY) });
+
+        };
 };
 
 slowDisplay( 100,0, myTextStringArray );
 
 myTspans = myGroup.selectAll("tspan").attr({
-    	opacity: 0
+        opacity: 0
 });
 
 function animFunc( element ) {
-	Snap.animate(0,1, function( value ) {
-		element.attr({ opacity: value, rotate: (value * 360) });
-	}, 600 );
+        Snap.animate(0,1, function( value ) {
+                element.attr({ opacity: value, rotate: (value * 360) });
+        }, 600 );
 }
 
 for( var i=0; i < myTspans.length; i++ ) {
-	setTimeout( 
-			animFunc.bind(null, myTspans[i]) 
-		, i * 60);
+        setTimeout(
+                        animFunc.bind(null, myTspans[i])
+                , i * 60);
 }
 
 var contact = s.text(350,620,"ians.coding@gmail.com, twitter: @ianscoding");
 //contact.hover( function() { 
-//	this.node.textContent = 'ians.coding@gmail.com, twitter: @ianscoding';
+//      this.node.textContent = 'ians.coding@gmail.com, twitter: @ianscoding';
 //} );
 
-});
-
+//})();
 </script>
 
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-48783044-1', 'dabbles.info');
-  ga('send', 'pageview');
-
-</script>
-
-</body>
-
+<?php include('footer.php'); ?>
 

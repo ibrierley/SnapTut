@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html>
+    	<head>
+<title>Snap.svg Test</title>
+	</head>
+<body>
+
+
+<link href="/snapstyle.css" rel="stylesheet">
+<script src="snap.svg.js"></script>
+<script>
+
+Snap.plugin(function (Snap, Element, Paper, glob) {
+    Paper.prototype.multitext = function (x, y, txt) {
+        txt = txt.split("\n");
+        var t = this.text(x, y, txt);
+        t.selectAll("tspan:nth-child(n+2)").attr({
+            dy: "1.2em",
+            x: x
+        });
+        return t;
+    };
+
+    	Element.prototype.multitext = function( txt ) {
+		var words = txt.split(' ');
+		console.log( words );
+	};
+
+});
+
+
+var paper = Snap(1000,1000);
+
+
+var ttt = paper.multitext(100, 100, "Sample\nmultiline\ntext").attr({
+    font: "18px Arial",
+    textAnchor: "middle"
+}); 
+
+var circle = paper.circle(50,50,100).attr({ fill: 'red', opacity: 0.5 });
+
+
+</script>
+
+</body>
+
+
+
+
